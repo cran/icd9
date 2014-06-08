@@ -3,7 +3,8 @@
 \alias{icd9AddLeadingZeroesMajor}
 \title{zero-pad major part of ICD9 code}
 \usage{
-icd9AddLeadingZeroesMajor(major)
+icd9AddLeadingZeroesMajor(major, invalidAction = c("ignore", "silent", "warn",
+  "stop"))
 }
 \arguments{
 \item{major}{character vector of 'major' part of ICD-9 codes, i.e. that part
@@ -19,6 +20,16 @@ three digit codes are returned unchanged, one and two digit
   codes are preceded by 00 or 0. V or E codes are trimmed for whitespace and
   returned without prefxing. NA values are generated where the code is
   non-numeric, and doesn't match a valid V or E code format.
+}
+\seealso{
+Other ICD-9 convert: \code{\link{icd9AddLeadingZeroesShort}};
+  \code{\link{icd9DecimalToShort}};
+  \code{\link{icd9DropZeroFromDecimal}};
+  \code{\link{icd9PartsRecompose}},
+  \code{\link{icd9PartsToDecimal}},
+  \code{\link{icd9PartsToDecimal}},
+  \code{\link{icd9PartsToShort}},
+  \code{\link{icd9PartsToShort}}
 }
 \keyword{internal}
 \keyword{manip}

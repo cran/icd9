@@ -3,7 +3,8 @@
 \alias{icd9AddLeadingZeroesDecimal}
 \title{pad decimal ICD-9 codes with leading zeroes}
 \usage{
-icd9AddLeadingZeroesDecimal(icd9Decimal)
+icd9AddLeadingZeroesDecimal(icd9Decimal, invalidAction = c("ignore", "silent",
+  "warn", "stop"))
 }
 \arguments{
 \item{icd9Decimal}{character vector of ICD-9 codes. If fewer than five characters is given in a

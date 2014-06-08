@@ -2,9 +2,10 @@
 \name{icd9ExpandRangeShort}
 \alias{\%i9s\%}
 \alias{icd9ExpandRangeShort}
-\title{take SAS icd9 format for character range and expand to a list of codes}
+\title{take two ICD-9 codes and expand range to include all child codes}
 \usage{
-icd9ExpandRangeShort(start, end, validate = FALSE)
+icd9ExpandRangeShort(start, end, invalidAction = c("ignore", "silent", "warn",
+  "stop"))
 
 start \%i9s\% end
 }
@@ -13,9 +14,25 @@ start \%i9s\% end
 in a code, then the digits are greedily assigned to hundreds, then tens,
 then units, before the decimal parts. E.g. "10" becomes "010", not "0010"}
 
-\item{validate}{logical whether to validate the input ICD-9 codes for
-correctness. There may be additional simple checks, e.g. whether the code
-is of the right type, regardless of this argument.}
+\item{invalidAction}{character string (unit length) containing one of:
+  "ignore", "silent", "warn", "stop"
+
+  - \code{ignore} no check for validity of ICD-9 code is made implicitly.
+  This is the fastest option. If the function call is explicitly to check
+  validity, e.g. icd9ValidShort(icd9Short = "12345", invalidAction =
+  "ignore"), then the behavior is the same as \code{silent}.
+
+  - \code{silent} invalid ICD-9 codes are replaced silently by \code{NA}
+  (actually \code{NA_character_}). If the function returns \code{TRUE} or
+  \code{FALSE} rather than the ICD-9 code itself, then \code{FALSE} is
+  returned
+
+  - \code{warn} invalid ICD-9 codes are replaced by \code{NA} with a warning
+  revealing the invalid code(s).
+
+  - \code{stop} stop with error if any invalid codes are found in input. This
+  is the preferred method when doing one-time validation, e.g. of the
+  co-morbidity mapping lists.}
 }
 \description{
 this is cumbersome code, covering a whole load of edge cases
@@ -33,5 +50,20 @@ this is cumbersome code, covering a whole load of edge cases
 # the following should give all codes in 428 EXCEPT "428",
 # and all codes upto 43014 EXCEPT 430 and 4301
 icd9ExpandRangeShort("4280 ", "43014")
+}
+\seealso{
+Other ICD-9 ranges: \code{\link{\%i9d\%}},
+  \code{\link{icd9ExpandRangeDecimal}};
+  \code{\link{\%i9mj\%}};
+  \code{\link{icd9ChildrenDecimal}};
+  \code{\link{icd9Children}},
+  \code{\link{icd9ChildrenShort}};
+  \code{\link{icd9CondenseShort}};
+  \code{\link{icd9CondenseToExplainShort}};
+  \code{\link{icd9ExpandMinor}},
+  \code{\link{icd9ExpandMinorE}},
+  \code{\link{icd9ExpandMinorNV}};
+  \code{\link{icd9PrecedingMinors}},
+  \code{\link{icd9SubsequentMinors}}
 }
 

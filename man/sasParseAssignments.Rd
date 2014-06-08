@@ -22,5 +22,6 @@ list with each list item containing a matrix of "char ranges",
   etc. = "anothername" there is no delimiter between each assignment. '
 }
 \keyword{internal}
-\keyword{manip}
+\keyword{list}
+\keyword{programming}
 

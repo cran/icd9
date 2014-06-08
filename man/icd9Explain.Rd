@@ -3,18 +3,38 @@
 \alias{icd9Explain}
 \alias{icd9Explain.character}
 \alias{icd9Explain.list}
+\alias{icd9Explain.numeric}
+\alias{icd9ExplainDecimal}
+\alias{icd9ExplainShort}
 \title{explain ICD9 codes}
 \usage{
-icd9Explain(icd9Decimal)
+icd9Explain(icd9, short)
 
-\method{icd9Explain}{list}(icd9Decimal)
+icd9ExplainShort(icd9Short)
 
-\method{icd9Explain}{character}(icd9Decimal)
+icd9ExplainDecimal(icd9Decimal)
+
+\method{icd9Explain}{list}(icd9, short)
+
+\method{icd9Explain}{character}(icd9, short)
+
+\method{icd9Explain}{numeric}(icd9, short)
 }
 \arguments{
+\item{icd9}{is a character vector of ICD-9 codes. If fewer than five characters is
+given in a code, then the digits are greedily assigned to hundreds, then
+tens, then units, before the decimal parts. E.g. "10" becomes "010", not
+"0010"}
+
+\item{icd9Short}{is a character vector of ICD-9 codes. If fewer than five characters is given
+in a code, then the digits are greedily assigned to hundreds, then tens,
+then units, before the decimal parts. E.g. "10" becomes "010", not "0010"}
+
 \item{icd9Decimal}{character vector of ICD-9 codes. If fewer than five characters is given in a
 code, then the digits are greedily assigned to hundreds, then tens, then
 units, before the decimal parts. E.g. "10" becomes "010", not "0010"}
+
+\item{short}{single logical value which determines whether the ICD-9 code provided is in short (TRUE) or decimal (FALSE) form.}
 }
 \value{
 data frame, or list of data frames, with fields for ICD9 code, name
@@ -30,6 +50,8 @@ convert full format (123.45 style) ICD9 codes into the name and
 \item \code{list}: explain alll ICD-9 codes in a list of vectors
 
 \item \code{character}: explain character vector of ICD-9 codes
+
+\item \code{numeric}: explain numeric vector of ICD-9 codes, with warning
 }}
 \note{
 TODO: it will be useful to have S3 ICD-9 short and long classes for
@@ -38,7 +60,7 @@ TODO: it will be useful to have S3 ICD-9 short and long classes for
   ICD-9 codes.
 }
 \examples{
-icd9Explain(ahrqComorbid[[1]][1:3])
+icd9ExplainShort(ahrqComorbid[[1]][1:3])
 }
 \references{
 \url{http://www.stata.com/help.cgi?icd9}

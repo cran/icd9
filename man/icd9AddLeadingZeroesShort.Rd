@@ -3,7 +3,8 @@
 \alias{icd9AddLeadingZeroesShort}
 \title{add leading zeroes to short-form ICD-9 code}
 \usage{
-icd9AddLeadingZeroesShort(icd9)
+icd9AddLeadingZeroesShort(icd9Short, invalidAction = c("ignore", "silent",
+  "warn", "stop"))
 }
 \arguments{
 \item{icd9}{is a character vector of ICD-9 codes. If fewer than five characters is
@@ -14,6 +15,16 @@ tens, then units, before the decimal parts. E.g. "10" becomes "010", not
 \description{
 Use with care. non-decimal ICD-9 codes with length<5 are often
   ambiguous. E.g. 100 could be 1.00 10.0 or 100
+}
+\seealso{
+Other ICD-9 convert: \code{\link{icd9AddLeadingZeroesMajor}};
+  \code{\link{icd9DecimalToShort}};
+  \code{\link{icd9DropZeroFromDecimal}};
+  \code{\link{icd9PartsRecompose}},
+  \code{\link{icd9PartsToDecimal}},
+  \code{\link{icd9PartsToDecimal}},
+  \code{\link{icd9PartsToShort}},
+  \code{\link{icd9PartsToShort}}
 }
 \keyword{internal}
 \keyword{manip}

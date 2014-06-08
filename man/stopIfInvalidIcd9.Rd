@@ -20,23 +20,36 @@ tens, then units, before the decimal parts. E.g. "10" becomes "010", not
 indicate who called here.}
 }
 \description{
-warn or stop with invalid ICD-9 codes
+In the case of warning, execution continues, and the logical
+  vector containing the *invalid* codes is returned invisibly. Returning the
+  invalids for consistency with the name of the function. The warn version of
+  this function only uses one call to check validity, making execution as
+  fast as possible.
 }
 \seealso{
-Other ICD9 validation: \code{\link{icd9ValidDecimal}},
+Other ICD9 validation: \code{\link{icd9GetInvalidMappingDecimal}},
+  \code{\link{icd9GetInvalidMappingShort}},
+  \code{\link{icd9ValidMapping}},
+  \code{\link{icd9ValidMappingDecimal}},
+  \code{\link{icd9ValidMappingShort}};
+  \code{\link{icd9ValidDecimal}},
   \code{\link{icd9ValidDecimalE}},
   \code{\link{icd9ValidDecimalE}},
   \code{\link{icd9ValidDecimalN}},
   \code{\link{icd9ValidDecimalN}},
   \code{\link{icd9ValidDecimalV}},
   \code{\link{icd9ValidDecimalV}};
+  \code{\link{icd9ValidMajor}};
+  \code{\link{icd9ValidNaWarnStop}},
+  \code{\link{icd9ValidNaWarnStopDecimal}},
+  \code{\link{icd9ValidNaWarnStopShort}};
   \code{\link{icd9ValidShort}},
   \code{\link{icd9ValidShortE}},
   \code{\link{icd9ValidShortE}},
   \code{\link{icd9ValidShortN}},
   \code{\link{icd9ValidShortN}},
   \code{\link{icd9ValidShortV}},
-  \code{\link{icd9ValidShortV}}
+  \code{\link{icd9ValidShortV}}; \code{\link{icd9Valid}}
 }
 \keyword{error}
 

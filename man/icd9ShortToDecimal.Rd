@@ -3,8 +3,9 @@
 \alias{icd9ShortToDecimal}
 \title{icd9ShortToDecimal}
 \usage{
-icd9ShortToDecimal(icd9Short, leadingZeroes = F, keepLoneDecimal = F,
-  validate = F)
+icd9ShortToDecimal(icd9Short, leadingZeroes = FALSE,
+  keepLoneDecimal = FALSE, invalidAction = c("ignore", "silent", "warn",
+  "stop"))
 }
 \arguments{
 \item{icd9Short}{is a character vector of ICD-9 codes. If fewer than five characters is given
@@ -22,9 +23,25 @@ have a situation where we do not want to add trailing zeroes, but may wish
 to preserve the decimal point. If this is desired, then set this value to
 TRUE.}
 
-\item{validate}{logical whether to validate the input ICD-9 codes for
-correctness. There may be additional simple checks, e.g. whether the code
-is of the right type, regardless of this argument.}
+\item{invalidAction}{character string (unit length) containing one of:
+  "ignore", "silent", "warn", "stop"
+
+  - \code{ignore} no check for validity of ICD-9 code is made implicitly.
+  This is the fastest option. If the function call is explicitly to check
+  validity, e.g. icd9ValidShort(icd9Short = "12345", invalidAction =
+  "ignore"), then the behavior is the same as \code{silent}.
+
+  - \code{silent} invalid ICD-9 codes are replaced silently by \code{NA}
+  (actually \code{NA_character_}). If the function returns \code{TRUE} or
+  \code{FALSE} rather than the ICD-9 code itself, then \code{FALSE} is
+  returned
+
+  - \code{warn} invalid ICD-9 codes are replaced by \code{NA} with a warning
+  revealing the invalid code(s).
+
+  - \code{stop} stop with error if any invalid codes are found in input. This
+  is the preferred method when doing one-time validation, e.g. of the
+  co-morbidity mapping lists.}
 }
 \description{
 converts ICD-9 'short' form to decimal form

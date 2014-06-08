@@ -36,5 +36,11 @@ internal function which checks vector lengths to avoid
   unintentional recycling of vectors when lengths differ. Length of one is
   fine for major or minor.
 }
+\seealso{
+Other ICD-9 convert: \code{\link{icd9AddLeadingZeroesMajor}};
+  \code{\link{icd9AddLeadingZeroesShort}};
+  \code{\link{icd9DecimalToShort}};
+  \code{\link{icd9DropZeroFromDecimal}}
+}
 \keyword{internal}
 

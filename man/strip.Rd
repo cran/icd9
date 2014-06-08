@@ -3,7 +3,7 @@
 \alias{strip}
 \title{strip all whitespace}
 \usage{
-strip(x)
+strip(x, pattern = " ")
 }
 \arguments{
 \item{x}{is a character vector to strip}

@@ -5,7 +5,8 @@
 \alias{icd9ExpandMinorNV}
 \title{expand decimal part of ICD-9 code to cover all possible sub-codes}
 \usage{
-icd9ExpandMinor(minor = "", validate = FALSE)
+icd9ExpandMinor(minor = "", invalidAction = c("ignore", "silent", "warn",
+  "stop"))
 
 icd9ExpandMinorNV(minor = "")
 
@@ -28,6 +29,19 @@ Accepts a single number or character input starting point for
 #examples #icd9ExpandMinor() # return all possible decimal parts of ICD9 codes
 icd9ExpandMinor(1) # "1"  "10" "11" "12" "13" "14" "15" "16" "17" "18" "19"
 icd9ExpandMinor("1") # same
+}
+\seealso{
+Other ICD-9 ranges: \code{\link{\%i9d\%}},
+  \code{\link{icd9ExpandRangeDecimal}};
+  \code{\link{\%i9mj\%}}; \code{\link{\%i9s\%}},
+  \code{\link{icd9ExpandRangeShort}};
+  \code{\link{icd9ChildrenDecimal}};
+  \code{\link{icd9Children}},
+  \code{\link{icd9ChildrenShort}};
+  \code{\link{icd9CondenseShort}};
+  \code{\link{icd9CondenseToExplainShort}};
+  \code{\link{icd9PrecedingMinors}},
+  \code{\link{icd9SubsequentMinors}}
 }
 \keyword{internal}
 \keyword{manip}

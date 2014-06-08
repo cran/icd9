@@ -4,26 +4,36 @@
 \title{parse AHRQ data}
 \usage{
 parseAhrqSas(sasPath = system.file("extdata", "comformat2012-2013.txt",
-  package = "icd9"), save = FALSE, saveDir = "~/icd9/data",
-  returnAll = FALSE)
+  package = "icd9"), condense = FALSE, save = FALSE,
+  saveDir = "~/icd9/data", returnAll = FALSE)
 }
 \arguments{
-\item{sasPath}{single character string containing path to SAS FORMAT
-definition code.}
+\item{sasPath}{single character string containing path or URL for some SAS
+code. The source SAS code is stored in extdata or at the location specified
+in URL. In development mode in \code{devtools}, this is actually
+inst/extdata. This function is internal, since it is used to generate data
+which ends up in the distributed package. However, the package user can
+verify that the code creates the distributed R data. Also, changes to the
+original SAS code can be used to regenerate the R data by the user, without
+waiting for a package release.}
 
-\item{save}{logical, whether to try to save the output data in the source
-tree.}
+\item{condense}{logical whether to condense the result ranges to the minimal
+set of parent ICD-9 codes which exactly define the list. Defaults to
+\code{FALSE} so that the saved list will allow rapid look-up of codes
+without further processing. Small memory versus time trade-off.}
 
-\item{saveDir}{character vector of unit length containing path to the source
-package data directory. Default is ~/icd9/data}
+\item{save}{logical whether to save the result in the source tree. Defaults
+to \code{FALSE}.}
+
+\item{saveDir}{path to directory to save the data. This is typically the data
+folder in the devleopment source tree. Defaults to \code{"~/icd9/data"}.
+Could possibly avoid hard-coding path with devtools functions.}
 
 \item{returnAll}{logical which, if TRUE, will result in the invisible return of ahrqComorbidAll result, otherwise, ahrqComorbid is reutrned.}
 }
 \value{
-list of lists, name value pairs, and where a single name was
-  associated with multiple further name-value pairs, this is presented as a
-  sub-list. This is primarily required because of the obtuse SAS FORMAT data
-  structure: the AHRQ codes are hidden in a sublist of the first item.
+invisibly returns the list of vectors, where a
+  co-morbidity name is associated with a character vector of ICD-9 codes.
 }
 \description{
 Takes the raw data taken directly from the AHRQ web site and

@@ -32,14 +32,23 @@ As in \code{icd9ValidDecimal}, character type of the
 \url{http://www.stata.com/users/wgould/icd9/icd9.hlp}
   \url{http://www.sascommunity.org/wiki/Validate_the_format_of_ICD-9_codes}
 
-Other ICD9 validation: \code{\link{icd9ValidDecimal}},
+Other ICD9 validation: \code{\link{icd9GetInvalidMappingDecimal}},
+  \code{\link{icd9GetInvalidMappingShort}},
+  \code{\link{icd9ValidMapping}},
+  \code{\link{icd9ValidMappingDecimal}},
+  \code{\link{icd9ValidMappingShort}};
+  \code{\link{icd9ValidDecimal}},
   \code{\link{icd9ValidDecimalE}},
   \code{\link{icd9ValidDecimalE}},
   \code{\link{icd9ValidDecimalN}},
   \code{\link{icd9ValidDecimalN}},
   \code{\link{icd9ValidDecimalV}},
   \code{\link{icd9ValidDecimalV}};
-  \code{\link{stopIfInvalidIcd9}},
+  \code{\link{icd9ValidMajor}};
+  \code{\link{icd9ValidNaWarnStop}},
+  \code{\link{icd9ValidNaWarnStopDecimal}},
+  \code{\link{icd9ValidNaWarnStopShort}};
+  \code{\link{icd9Valid}}; \code{\link{stopIfInvalidIcd9}},
   \code{\link{warnIfInvalidIcd9}}
 }
 

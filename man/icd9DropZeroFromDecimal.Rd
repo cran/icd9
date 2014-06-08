@@ -3,13 +3,34 @@
 \alias{icd9DropZeroFromDecimal}
 \title{drop zero padding from decimal ICD-9 code.}
 \usage{
-icd9DropZeroFromDecimal(icd9)
+icd9DropZeroFromDecimal(icd9Decimal, invalidAction = c("ignore", "silent",
+  "warn", "stop"))
 }
 \arguments{
 \item{icd9}{is a character vector of ICD-9 codes. If fewer than five characters is
 given in a code, then the digits are greedily assigned to hundreds, then
 tens, then units, before the decimal parts. E.g. "10" becomes "010", not
 "0010"}
+
+\item{invalidAction}{character string (unit length) containing one of:
+  "ignore", "silent", "warn", "stop"
+
+  - \code{ignore} no check for validity of ICD-9 code is made implicitly.
+  This is the fastest option. If the function call is explicitly to check
+  validity, e.g. icd9ValidShort(icd9Short = "12345", invalidAction =
+  "ignore"), then the behavior is the same as \code{silent}.
+
+  - \code{silent} invalid ICD-9 codes are replaced silently by \code{NA}
+  (actually \code{NA_character_}). If the function returns \code{TRUE} or
+  \code{FALSE} rather than the ICD-9 code itself, then \code{FALSE} is
+  returned
+
+  - \code{warn} invalid ICD-9 codes are replaced by \code{NA} with a warning
+  revealing the invalid code(s).
+
+  - \code{stop} stop with error if any invalid codes are found in input. This
+  is the preferred method when doing one-time validation, e.g. of the
+  co-morbidity mapping lists.}
 }
 \value{
 character vector of ICD-9 codes with extra zeroes dropped from major
@@ -20,6 +41,16 @@ decimal form ICD-9 codes are not ambiguous if the leading zeroes
   are dropped. Some short-form ICD-9 codes would not be ambiguous, e.g. "1"
   but many would be problematic, so no function is provided to do this for
   short-form codes.
+}
+\seealso{
+Other ICD-9 convert: \code{\link{icd9AddLeadingZeroesMajor}};
+  \code{\link{icd9AddLeadingZeroesShort}};
+  \code{\link{icd9DecimalToShort}};
+  \code{\link{icd9PartsRecompose}},
+  \code{\link{icd9PartsToDecimal}},
+  \code{\link{icd9PartsToDecimal}},
+  \code{\link{icd9PartsToShort}},
+  \code{\link{icd9PartsToShort}}
 }
 \keyword{internal}
 \keyword{manip}

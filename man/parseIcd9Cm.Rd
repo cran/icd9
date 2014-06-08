@@ -5,7 +5,7 @@
   Medicaid Services.}
 \usage{
 parseIcd9Cm(icd9path = system.file("extdata", "CMS32_DESC_LONG_DX.txt",
-  package = "icd9"), save = F, path = "~/icd9/data")
+  package = "icd9"), save = FALSE, path = "~/icd9/data")
 }
 \arguments{
 \item{icd9path}{path of the source data which is in /extddata in the

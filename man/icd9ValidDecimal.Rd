@@ -40,13 +40,22 @@ TODO: icd9ValidDecimalN not quite right, since it would validate 0.12
 \url{http://www.stata.com/users/wgould/icd9/icd9.hlp}
   url{http://www.sascommunity.org/wiki/Validate_the_format_of_ICD-9_codes}
 
-Other ICD9 validation: \code{\link{icd9ValidShort}},
+Other ICD9 validation: \code{\link{icd9GetInvalidMappingDecimal}},
+  \code{\link{icd9GetInvalidMappingShort}},
+  \code{\link{icd9ValidMapping}},
+  \code{\link{icd9ValidMappingDecimal}},
+  \code{\link{icd9ValidMappingShort}};
+  \code{\link{icd9ValidMajor}};
+  \code{\link{icd9ValidNaWarnStop}},
+  \code{\link{icd9ValidNaWarnStopDecimal}},
+  \code{\link{icd9ValidNaWarnStopShort}};
+  \code{\link{icd9ValidShort}},
   \code{\link{icd9ValidShortE}},
   \code{\link{icd9ValidShortE}},
   \code{\link{icd9ValidShortN}},
   \code{\link{icd9ValidShortN}},
   \code{\link{icd9ValidShortV}},
-  \code{\link{icd9ValidShortV}};
+  \code{\link{icd9ValidShortV}}; \code{\link{icd9Valid}};
   \code{\link{stopIfInvalidIcd9}},
   \code{\link{warnIfInvalidIcd9}}
 }

@@ -3,7 +3,7 @@
 \alias{strMultiMatch}
 \title{return the actual matches from a bracketed regex}
 \usage{
-strMultiMatch(pattern, text, ...)
+strMultiMatch(pattern, text, dropEmpty = FALSE, ...)
 }
 \arguments{
 \item{pattern}{regular expression: if it has bracketed sections, these
@@ -15,6 +15,8 @@ length as the pattern vector, or the patern vector should be length one.}
 \item{...}{are additional parameters passed to regexec and regmatches. I
 haven't tried this: it may need two separate variables containing lists of
 params, since this will send everything to both functions.}
+
+\item{dropEmpty}{logical whether to drop rows with no matches}
 }
 \value{
 list of character vectors, list length being the length of the inptu

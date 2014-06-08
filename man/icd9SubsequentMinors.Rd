@@ -4,9 +4,10 @@
 \alias{icd9SubsequentMinors}
 \title{determine preceding or subsequent post-decimal parts of ICD9 codes}
 \usage{
-icd9SubsequentMinors(minor, validate = FALSE)
+icd9SubsequentMinors(minor)
 
-icd9PrecedingMinors(minor, validate = FALSE)
+icd9PrecedingMinors(minor, invalidAction = c("ignore", "silent", "warn",
+  "stop"))
 }
 \arguments{
 \item{minor}{character vector of 'minor' part of ICD-9 codes, i.e. that part
@@ -19,6 +20,20 @@ this is not simply numeric, since "4" is after "39" and "0" !=
   "00". Frustrating to have to do so much string manipulation, but, as I have
   learned, it is not possible to treat ICD-9 codes as numbers without risking
   ambiguity and subtle mistakes.
+}
+\seealso{
+Other ICD-9 ranges: \code{\link{\%i9d\%}},
+  \code{\link{icd9ExpandRangeDecimal}};
+  \code{\link{\%i9mj\%}}; \code{\link{\%i9s\%}},
+  \code{\link{icd9ExpandRangeShort}};
+  \code{\link{icd9ChildrenDecimal}};
+  \code{\link{icd9Children}},
+  \code{\link{icd9ChildrenShort}};
+  \code{\link{icd9CondenseShort}};
+  \code{\link{icd9CondenseToExplainShort}};
+  \code{\link{icd9ExpandMinor}},
+  \code{\link{icd9ExpandMinorE}},
+  \code{\link{icd9ExpandMinorNV}}
 }
 \keyword{internal}
 \keyword{manip}
