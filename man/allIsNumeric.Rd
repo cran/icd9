@@ -8,14 +8,15 @@ allIsNumeric(x, extras = c(".", "NA"))
 \arguments{
 \item{x}{is a character vector to be tested}
 
-\item{extras}{is a vector of character strings which are counted as NA values, defaults to '.' and 'NA'}
+\item{extras}{is a vector of character strings which are counted as NA
+values, defaults to '.' and 'NA'}
 }
 \value{
 logical
 }
 \description{
-check whether all the items of input vector are numeric without throwing warning
-derived from Hmsic package
+check whether all the items of input vector are numeric without
+  throwing warning derived from Hmsic package
 }
 \keyword{internal}
 

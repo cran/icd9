@@ -1,6 +1,5 @@
 context('icd9 ranges')
 
-
 test_that("expand icd9 range definition", {
   expect_equal(sort(icd9ExpandRangeShort("4012", "40145")),
                sort(c("4012", "40120", "40121", "40122", "40123", "40124", "40125",
@@ -35,8 +34,13 @@ test_that("expand icd9 range definition", {
     sort(c("4410", icd9ExpandRangeShort("44100", "4412")))
   )
 
-  expect_equal(icd9ExpandRangeShort("401", "401"), icd9Children("401", short= TRUE))
-  expect_equal(icd9ExpandRangeShort("401", "402"), icd9Children(c("401", "402"), short= TRUE))
+  expect_equal(icd9ExpandRangeShort("401", "401"), icd9Children("401", isShort = TRUE))
+  expect_equal(icd9ExpandRangeShort("401", "402"), icd9Children(c("401", "402"), isShort = TRUE))
+  # the next two cases cover the HIV ranges in the co-morbidities, wherein the
+  # final code is included, in which case the parent ("044" in this case) is
+  # implied strongly.
+  expect_equal(icd9ExpandRangeShort("043", "0449"), icd9ExpandRangeShort("043", "044"))
+  expect_equal(icd9ExpandRangeShort("043", "04499"), icd9ExpandRangeShort("043", "044"))
   expect_equal(icd9ExpandRangeShort("401", "402"),
                c("401", "4010", "4011", "4012", "4013", "4014", "4015", "4016",
                  "4017", "4018", "4019", "40100", "40110", "40120", "40130", "40140",
@@ -126,6 +130,7 @@ test_that("preceding minors", {
 
   # these both failed - need zero padding for the first
   expect_equal(("042 " %i9s% "043 ")[1], "042")
+  expect_equal(("42" %i9s% "043 ")[1], "042")
   "3420 " %i9s% "3449 "
 
   expect_equal("042.11" %i9d% "042.13", c("042.11", "042.12", "042.13"))
@@ -167,7 +172,8 @@ test_that("icd9ChildrenDecimal", {
   expect_equal(icd9ChildrenDecimal("V10.0"), append("V10.0", paste("V10.0", 0:9, sep = "")))
   expect_equal(toupper(icd9ChildrenDecimal("v10.0")), icd9ChildrenDecimal("V10.0"))
   expect_equal(icd9ChildrenDecimal(" V10.0 "), icd9ChildrenDecimal("V10.0"))
-  expect_equal(icd9ChildrenDecimal("10.0"), append("010.0", paste("010.0", 0:9, sep = "")))
+  expect_equal(icd9ChildrenDecimal("10.0"), append("10.0", paste("10.0", 0:9, sep = "")))
+  expect_equal(icd9ChildrenDecimal("010.0"), append("010.0", paste("010.0", 0:9, sep = "")))
   #expect_equal(icd9ChildrenDecimal("010.0"), icd9ChildrenDecimal("10.0"))
 
 })
@@ -189,8 +195,11 @@ test_that("icd9ChildrenShort valid input", {
   #expect_equal(toupper(icd9ChildrenShort("v100")), icd9Children("V100"))
   expect_equal(icd9ChildrenShort(" V100 "), icd9ChildrenShort("V100"))
   expect_equal(icd9ChildrenShort("0100"), paste("0100", c("", 0:9), sep = ""))
-  expect_equal(icd9ChildrenShort("1")[1], "001")
-  expect_equal(icd9ChildrenShort("23")[1], "023")
+  expect_equal(icd9ChildrenShort("1")[1], "1")
+  expect_equal(icd9ChildrenShort("01")[1], "01")
+  expect_equal(icd9ChildrenShort("001")[1], "001")
+  expect_equal(icd9ChildrenShort("023")[1], "023")
+  expect_equal(icd9ChildrenShort("23")[1], "23")
   expect_equal(icd9ChildrenShort("456")[1], "456")
 })
 

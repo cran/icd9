@@ -94,6 +94,17 @@ test_that("icd9ValidShort", {
 
 })
 
+test_that("test valid major numeric, valid", {
+  expect_equal(
+    icd9ValidMajorN(c("1", "22", "333", "4444", "55555", "1.1", "22.22", "333.333")),
+    c(T, T, T, F, F, F, F, F)
+  )
+  expect_equal(
+    icd9ValidMajorN(c("01", "001", "22", "022", "0333", "04444", "0055555", "01.1", "022.22", "00333.333")),
+    c(T, T, T, T, F, F, F, F, F, F)
+  )
+})
+
 test_that("test major validation", {
   expect_equal(
     icd9ValidMajor(c("", "1", "22", "333", "4444", "V", "V2", "V34", "V567", "E", "E1", "E70", "E300", "E876")),
@@ -102,20 +113,20 @@ test_that("test major validation", {
 })
 
 test_that("stop if invalid", {
-  expect_error(stopIfInvalidIcd9('notvalidicd9', short = TRUE))
+  expect_error(stopIfInvalidIcd9('notvalidicd9', isShort = TRUE))
 })
 
 test_that("warn if invalid", {
-  expect_warning(warnIfInvalidIcd9('notvalidicd9', short = TRUE))
+  expect_warning(warnIfInvalidIcd9('notvalidicd9', isShort = TRUE))
 })
 
 test_that("NA warn stop switch handles NA values", {
 
-  expect_that(icd9ValidNaWarnStopShort(NA_character_, invalidAction = "ignore"), not(gives_warning()))
-  expect_that(icd9ValidNaWarnStopShort(NA_character_, invalidAction = "silent"), not(gives_warning()))
+  expect_that(icd9ValidNaWarnStopShort(NA_character_, invalidAction = "ignore"), testthat::not(gives_warning()))
+  expect_that(icd9ValidNaWarnStopShort(NA_character_, invalidAction = "silent"), testthat::not(gives_warning()))
   expect_that(warnNa <- icd9ValidNaWarnStopShort(NA_character_, invalidAction = "warn"), gives_warning())
   expect_that(icd9ValidNaWarnStopShort(NA_character_, invalidAction = "stop"), throws_error())
-  expect_that(icd9ValidNaWarnStopShort(NA, invalidAction = "ignore"), not(throws_error()))
+  expect_that(icd9ValidNaWarnStopShort(NA, invalidAction = "ignore"), testthat::not(throws_error()))
   expect_that(icd9ValidNaWarnStopShort(NA, invalidAction = "silent"), throws_error()) # this is now an incorrect data type (logical/numeric NA, not NA_character_
   expect_that(icd9ValidNaWarnStopShort(NA, invalidAction = "warn"), throws_error())
   expect_that(icd9ValidNaWarnStopShort(NA, invalidAction = "stop"), throws_error())

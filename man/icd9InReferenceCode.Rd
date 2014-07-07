@@ -5,8 +5,8 @@
 \alias{icd9InReferenceCode}
 \title{match ICD9 codes}
 \usage{
-icd9InReferenceCode(icd9, icd9Reference, short = TRUE,
-  shortReference = TRUE, validate = FALSE, validateReference = FALSE)
+icd9InReferenceCode(icd9, icd9Reference, isShort = TRUE,
+  isShortReference = TRUE, validate = FALSE, validateReference = FALSE)
 
 icd9 \%i9in\% icd9Reference
 }
@@ -16,13 +16,13 @@ given in a code, then the digits are greedily assigned to hundreds, then
 tens, then units, before the decimal parts. E.g. "10" becomes "010", not
 "0010"}
 
-\item{short}{single logical value which determines whether the ICD-9 code provided is in short (TRUE) or decimal (FALSE) form.}
+\item{isShort}{single logical value which determines whether the ICD-9 code provided is in short (TRUE) or decimal (FALSE) form.}
 
 \item{validate}{logical whether to validate the input ICD-9 codes for
 correctness. There may be additional simple checks, e.g. whether the code
 is of the right type, regardless of this argument.}
 
-\item{shortReference}{logical, see argument \code{short}}
+\item{isShortReference}{logical, see argument \code{isShort}}
 }
 \value{
 logical vector of which icd9 match or are subcategory of

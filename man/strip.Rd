@@ -14,7 +14,7 @@ character vector
 \description{
 could do this with regular expression, but slow, and this
   function is called frequently. My only use case works with removal of all
-  whitespace.
+  whitespace, and I don't expect <TAB>.
 }
 \keyword{internal}
 

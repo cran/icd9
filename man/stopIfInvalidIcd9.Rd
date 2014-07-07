@@ -4,9 +4,9 @@
 \alias{warnIfInvalidIcd9}
 \title{warn or stop with invalid ICD-9 codes}
 \usage{
-stopIfInvalidIcd9(icd9, short, callingFunction = "")
+stopIfInvalidIcd9(icd9, isShort)
 
-warnIfInvalidIcd9(icd9, short, callingFunction = "")
+warnIfInvalidIcd9(icd9, isShort)
 }
 \arguments{
 \item{icd9}{is a character vector of ICD-9 codes. If fewer than five characters is
@@ -14,10 +14,7 @@ given in a code, then the digits are greedily assigned to hundreds, then
 tens, then units, before the decimal parts. E.g. "10" becomes "010", not
 "0010"}
 
-\item{short}{single logical value which determines whether the ICD-9 code provided is in short (TRUE) or decimal (FALSE) form.}
-
-\item{callingFunction}{not implemented: ideally look at call stack and
-indicate who called here.}
+\item{isShort}{single logical value which determines whether the ICD-9 code provided is in short (TRUE) or decimal (FALSE) form.}
 }
 \description{
 In the case of warning, execution continues, and the logical
@@ -34,21 +31,19 @@ Other ICD9 validation: \code{\link{icd9GetInvalidMappingDecimal}},
   \code{\link{icd9ValidMappingShort}};
   \code{\link{icd9ValidDecimal}},
   \code{\link{icd9ValidDecimalE}},
-  \code{\link{icd9ValidDecimalE}},
   \code{\link{icd9ValidDecimalN}},
-  \code{\link{icd9ValidDecimalN}},
-  \code{\link{icd9ValidDecimalV}},
   \code{\link{icd9ValidDecimalV}};
-  \code{\link{icd9ValidMajor}};
+  \code{\link{icd9ValidMajor}},
+  \code{\link{icd9ValidMajorE}},
+  \code{\link{icd9ValidMajorN}},
+  \code{\link{icd9ValidMajorV}};
   \code{\link{icd9ValidNaWarnStop}},
   \code{\link{icd9ValidNaWarnStopDecimal}},
+  \code{\link{icd9ValidNaWarnStopMajor}},
   \code{\link{icd9ValidNaWarnStopShort}};
   \code{\link{icd9ValidShort}},
   \code{\link{icd9ValidShortE}},
-  \code{\link{icd9ValidShortE}},
   \code{\link{icd9ValidShortN}},
-  \code{\link{icd9ValidShortN}},
-  \code{\link{icd9ValidShortV}},
   \code{\link{icd9ValidShortV}}; \code{\link{icd9Valid}}
 }
 \keyword{error}

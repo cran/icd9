@@ -5,8 +5,7 @@
 \alias{icd9ExpandMinorNV}
 \title{expand decimal part of ICD-9 code to cover all possible sub-codes}
 \usage{
-icd9ExpandMinor(minor = "", invalidAction = c("ignore", "silent", "warn",
-  "stop"))
+icd9ExpandMinor(minor = "", invalidAction = icd9InvalidActions)
 
 icd9ExpandMinorNV(minor = "")
 
@@ -33,7 +32,9 @@ icd9ExpandMinor("1") # same
 \seealso{
 Other ICD-9 ranges: \code{\link{\%i9d\%}},
   \code{\link{icd9ExpandRangeDecimal}};
-  \code{\link{\%i9mj\%}}; \code{\link{\%i9s\%}},
+  \code{\link{\%i9mj\%}},
+  \code{\link{icd9ExpandRangeMajor}};
+  \code{\link{\%i9s\%}},
   \code{\link{icd9ExpandRangeShort}};
   \code{\link{icd9ChildrenDecimal}};
   \code{\link{icd9Children}},

@@ -1,51 +1,3 @@
-#' @title match ICD9 codes
-#' @aliases "%i9in%"
-#' @description This does the hard work of finding whether a given icd9 code
-#'   falls under a group of reference ICD9 codes. icd9Reference is expanded to cover
-#'   all possible subgroups, then we look for matches where the given ICD9 codes
-#'   appear in the icd9Reference.
-#'   http://www.acep.org/Clinical---Practice-Management/V-and-E-Codes-FAQ/
-#' @seealso comorbidities.
-#' @templateVar icd9AnyName "icd9,icd9Reference"
-#' @template icd9-any
-#' @template short
-#' @template validate
-#' @param shortReference logical, see argument \code{short}
-#' @return logical vector of which icd9 match or are subcategory of
-#'   icd9Referenec
-#' @keywords internal
-icd9InReferenceCode <- function(icd9, icd9Reference, short = TRUE, shortReference = TRUE, validate = FALSE, validateReference = FALSE) {
-
-  if (!class(icd9) %in% c("character", "numeric", "integer"))
-    stop("icd9InReferenceCode expects a character or number vector for icd9, but got: ", class(icd9))
-  if (!class(icd9Reference) %in% c("character", "numeric", "integer"))
-    stop("icd9InReferenceCode expects a character or number vector for the basecodes,
-         to avoid ambiguity with trailing zeroes, but got: ", class(icd9Reference))
-  stopifnot(class(short) == 'logical', class(shortReference) == "logical")
-
-  if (length(short) >  1)
-    stop("icd9InReferenceCode got vector for short, expected single TRUE or FALSE value")
-  if (length(shortReference) >  1)
-    stop("icd9InReferenceCode got vector for shortReference, expected single TRUE or FALSE value")
-  if (length(short) == 0 )
-    stop("icd9InReferenceCode got empty vector for short, expected single TRUE or FALSE value")
-  if (length(shortReference) == 0)
-    stop("icd9InReferenceCode got empty vector for shortReference, expected single TRUE or FALSE value")
-
-  if (length(icd9Reference) == 0) stop("icd9InReferenceCode expects at least one icd9 code to test against")
-
-  if (validate) stopIfInvalidIcd9(icd9, callingFunction = "icd9InReferenceCode-icd9", short = short)
-  if (validateReference) stopIfInvalidIcd9(icd9Reference, callingFunction = "icd9InReferenceCode-icd9", short = shortReference)
-
-  kids <- memSpawnRefKids(icd9Reference, shortReference)
-
-  # convert to short form to make comparison
-  if (short == FALSE) icd9 <- icd9DecimalToShort(icd9)
-  if (shortReference == FALSE) kids <- icd9DecimalToShort(kids)
-
-  icd9 %in% kids
-}
-
 #' spawn reference codes into all possible lower-level codes (and memoise)
 #'
 #' take a regular string of an ICD9 code of format (ABC.zxyz) with or without
@@ -56,11 +8,11 @@ icd9InReferenceCode <- function(icd9, icd9Reference, short = TRUE, shortReferenc
 #' @import memoise
 #' @keywords internal
 spawnReferenceChildren <-
-  function(icd9Reference, shortReference) {
+  function(icd9Reference, isShortReference) {
     c(
       lapply(
         icd9Reference,
-        FUN = function(x) icd9Children(icd9 = x, short = shortReference)
+        FUN = function(x) icd9Children(icd9 = x, isShort = isShortReference)
       ),
       recursive = TRUE
     )
@@ -69,6 +21,54 @@ spawnReferenceChildren <-
 # this runs outside of a function, on package load
 library(memoise)
 memSpawnRefKids <- memoise::memoise(spawnReferenceChildren)
+
+#' @title match ICD9 codes
+#' @aliases "%i9in%"
+#' @description This does the hard work of finding whether a given icd9 code
+#'   falls under a group of reference ICD9 codes. icd9Reference is expanded to cover
+#'   all possible subgroups, then we look for matches where the given ICD9 codes
+#'   appear in the icd9Reference.
+#'   http://www.acep.org/Clinical---Practice-Management/V-and-E-Codes-FAQ/
+#' @seealso comorbidities.
+#' @templateVar icd9AnyName "icd9,icd9Reference"
+#' @template icd9-any
+#' @template isShort
+#' @template validate
+#' @param isShortReference logical, see argument \code{isShort}
+#' @return logical vector of which icd9 match or are subcategory of
+#'   icd9Referenec
+#' @keywords internal
+icd9InReferenceCode <- function(icd9, icd9Reference, isShort = TRUE, isShortReference = TRUE, validate = FALSE, validateReference = FALSE) {
+
+  if (!class(icd9) %in% c("character", "numeric", "integer"))
+    stop("icd9InReferenceCode expects a character or number vector for icd9, but got: ", class(icd9))
+  if (!class(icd9Reference) %in% c("character", "numeric", "integer"))
+    stop("icd9InReferenceCode expects a character or number vector for the basecodes,
+         to avoid ambiguity with trailing zeroes, but got: ", class(icd9Reference))
+  stopifnot(class(isShort) == 'logical', class(isShortReference) == "logical")
+
+  if (length(isShort) >  1)
+    stop("icd9InReferenceCode got vector for isShort, expected single TRUE or FALSE value")
+  if (length(isShortReference) >  1)
+    stop("icd9InReferenceCode got vector for isShortReference, expected single TRUE or FALSE value")
+  if (length(isShort) == 0 )
+    stop("icd9InReferenceCode got empty vector for isShort, expected single TRUE or FALSE value")
+  if (length(isShortReference) == 0)
+    stop("icd9InReferenceCode got empty vector for isShortReference, expected single TRUE or FALSE value")
+
+  if (length(icd9Reference) == 0) stop("icd9InReferenceCode expects at least one icd9 code to test against")
+
+  if (validate) stopIfInvalidIcd9(icd9, isShort = isShort)
+  if (validateReference) stopIfInvalidIcd9(icd9Reference, isShort = isShortReference)
+
+  kids <- memSpawnRefKids(icd9Reference, isShortReference)
+
+  # convert to short form to make comparison
+  if (isShort == FALSE) icd9 <- icd9DecimalToShort(icd9)
+  if (isShortReference == FALSE) kids <- icd9DecimalToShort(kids)
+
+  icd9 %in% kids
+}
 
 #' @rdname icd9InReferenceCode
 #' @export
@@ -151,15 +151,15 @@ lookupComorbidities <- function(dat,
 #'   since there should never be an error in mapping. There is overhead to check
 #'   the mapping each time, so not done by default. Could consider using
 #'   \code{memoise} to cache the result of the check. (TODO)
-#' @param shortMapping logical, whether the mapping is defined with short ICD-9
+#' @param isShortMapping logical, whether the mapping is defined with short ICD-9
 #'   codes (TRUE, the default), or decimal if set to FALSE.
 #' @export
 icd9Comorbidities <- function(icd9df,
                               visitId = "visitId",
                               icd9Field = "icd9",
                               icd9Mapping = ahrqComorbid,
-                              validateMapping = F,
-                              shortMapping = T) {
+                              validateMapping = FALSE,
+                              isShortMapping = TRUE) {
 
   stopifnot(visitId %in% names(icd9df), icd9Field %in% names(icd9df))
 
@@ -168,13 +168,7 @@ icd9Comorbidities <- function(icd9df,
     icd9Mapping <- get(icd9Mapping)
   }
 
-  if (validateMapping) {
-    if (shortMapping) {
-      stopifnot(all(unlist(lapply(icd9Mapping, FUN = icd9ValidShort), use.names=F)))
-    } else {
-      stopifnot(all(unlist(lapply(icd9Mapping, FUN = icd9ValidDecimal), use.names=F)))
-    }
-  }
+  stopifnot(icd9ValidMapping(icd9Mapping = icd9Mapping, isShort = isShortMapping))
 
   # loop through names of icd9 mapping, and put the results together so each
   # column is one comorbidity in a data frame. This is much faster with vapply,
@@ -194,14 +188,12 @@ icd9Comorbidities <- function(icd9df,
       }
     )
   )
-  ag <- aggregate(
+  aggregate(
     x = i[, -which(names(i) == visitId)], # all cols except visit ID will be aggregated
     by = list(visitId = i[[visitId]]), # group by the visitId
     FUN = any,
     simplify = TRUE
   )
-
-  ag
 }
 
 #' @rdname icd9Comorbidities

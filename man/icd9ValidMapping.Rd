@@ -7,7 +7,7 @@
 \alias{icd9ValidMappingShort}
 \title{validate an icd9 mapping to comorbidities}
 \usage{
-icd9ValidMapping(icd9Mapping, short)
+icd9ValidMapping(icd9Mapping, isShort)
 
 icd9ValidMappingDecimal(icd9Mapping)
 
@@ -26,7 +26,7 @@ icd9GetInvalidMappingDecimal(icd9Mapping)
 ),
 DEPRESS = c("3004", "30112", "3090", "3091", "311"))} amongst other longer groups.}
 
-\item{short}{single logical value which determines whether the ICD-9 code provided is in short (TRUE) or decimal (FALSE) form.}
+\item{isShort}{single logical value which determines whether the ICD-9 code provided is in short (TRUE) or decimal (FALSE) form.}
 }
 \description{
 just takes each item in each vector of the list of vectors and
@@ -35,21 +35,19 @@ just takes each item in each vector of the list of vectors and
 \seealso{
 Other ICD9 validation: \code{\link{icd9ValidDecimal}},
   \code{\link{icd9ValidDecimalE}},
-  \code{\link{icd9ValidDecimalE}},
   \code{\link{icd9ValidDecimalN}},
-  \code{\link{icd9ValidDecimalN}},
-  \code{\link{icd9ValidDecimalV}},
   \code{\link{icd9ValidDecimalV}};
-  \code{\link{icd9ValidMajor}};
+  \code{\link{icd9ValidMajor}},
+  \code{\link{icd9ValidMajorE}},
+  \code{\link{icd9ValidMajorN}},
+  \code{\link{icd9ValidMajorV}};
   \code{\link{icd9ValidNaWarnStop}},
   \code{\link{icd9ValidNaWarnStopDecimal}},
+  \code{\link{icd9ValidNaWarnStopMajor}},
   \code{\link{icd9ValidNaWarnStopShort}};
   \code{\link{icd9ValidShort}},
   \code{\link{icd9ValidShortE}},
-  \code{\link{icd9ValidShortE}},
   \code{\link{icd9ValidShortN}},
-  \code{\link{icd9ValidShortN}},
-  \code{\link{icd9ValidShortV}},
   \code{\link{icd9ValidShortV}}; \code{\link{icd9Valid}};
   \code{\link{stopIfInvalidIcd9}},
   \code{\link{warnIfInvalidIcd9}}

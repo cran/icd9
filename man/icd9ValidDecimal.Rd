@@ -45,16 +45,17 @@ Other ICD9 validation: \code{\link{icd9GetInvalidMappingDecimal}},
   \code{\link{icd9ValidMapping}},
   \code{\link{icd9ValidMappingDecimal}},
   \code{\link{icd9ValidMappingShort}};
-  \code{\link{icd9ValidMajor}};
+  \code{\link{icd9ValidMajor}},
+  \code{\link{icd9ValidMajorE}},
+  \code{\link{icd9ValidMajorN}},
+  \code{\link{icd9ValidMajorV}};
   \code{\link{icd9ValidNaWarnStop}},
   \code{\link{icd9ValidNaWarnStopDecimal}},
+  \code{\link{icd9ValidNaWarnStopMajor}},
   \code{\link{icd9ValidNaWarnStopShort}};
   \code{\link{icd9ValidShort}},
   \code{\link{icd9ValidShortE}},
-  \code{\link{icd9ValidShortE}},
   \code{\link{icd9ValidShortN}},
-  \code{\link{icd9ValidShortN}},
-  \code{\link{icd9ValidShortV}},
   \code{\link{icd9ValidShortV}}; \code{\link{icd9Valid}};
   \code{\link{stopIfInvalidIcd9}},
   \code{\link{warnIfInvalidIcd9}}

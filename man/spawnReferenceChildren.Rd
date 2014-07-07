@@ -3,7 +3,7 @@
 \alias{spawnReferenceChildren}
 \title{spawn reference codes into all possible lower-level codes (and memoise)}
 \usage{
-spawnReferenceChildren(icd9Reference, shortReference)
+spawnReferenceChildren(icd9Reference, isShortReference)
 }
 \description{
 take a regular string of an ICD9 code of format (ABC.zxyz) with or without

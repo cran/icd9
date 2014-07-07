@@ -1,25 +1,24 @@
-# 
+#
 # these utility functions are derived from Hmisc and one of my other projects.
 # All functions set for internal use in this package only to avoid namespace
 # conflicts.
 
-
 #' @title encode TRUE as 1, and FALSE as 0
-#' @description when saving data as text files for distribution, printing large amounts of text containing TRUE and FALSE
-#' is inefficient. Convert to binary takes more R memory, but allows more compact output
-#' TODO: test
+#' @description when saving data as text files for distribution, printing large
+#'   amounts of text containing TRUE and FALSE is inefficient. Convert to binary
+#'   takes more R memory, but allows more compact output TODO: test
 #' @param dframe dataframe which may contain logical fields
 #' @return dframe without logical fields
 #' @keywords internal manip
 logicalToBinary <- function(dframe) {
-  
+
   if (class(dframe) != 'data.frame') stop("logicalToBinary expects a data frame, but got %s", class(dframe))
   if (any(dim(dframe) == 0)) stop("got zero in at least one dimension in data frame. %d, %d", dim(dframe)[1], dim(dframe)[2])
-  
+
   # can condense this code into a one-liner, but this is clearer:
   logicalFields <- names(dframe)[sapply(dframe,class)=='logical']
   if (is.na(logicalFields) || length(logicalFields) == 0) return(dframe)
-  
+
   #update just the logical fields with integers
   dframe[,logicalFields] <-
     vapply(
@@ -33,12 +32,12 @@ logicalToBinary <- function(dframe) {
 #' @title strip all whitespace
 #' @description could do this with regular expression, but slow, and this
 #'   function is called frequently. My only use case works with removal of all
-#'   whitespace.
+#'   whitespace, and I don't expect <TAB>.
 #' @param x is a character vector to strip
 #' @return character vector
 #' @keywords internal
-strip <- function (x, pattern=" ") 
-  gsub(pattern = pattern, replacement = "", x, fixed = TRUE, useBytes = TRUE) # beware unicode
+strip <- function (x, pattern = " ") # beware unicode
+  gsub(pattern = pattern, replacement = "", x, fixed = TRUE, useBytes = TRUE)
 
 #' @title strip whitespace from ends of each string in given character vector
 #' @description slower than \code{strip}.
@@ -64,16 +63,26 @@ trim <- function(x)
 #'   text vector.
 strMultiMatch <- function(pattern, text, dropEmpty = FALSE, ...) {
   # unlist puts the name in the first position, which I don't think I ever want.
-  result <- lapply(text, function(x) unlist(regmatches(x=x, m=regexec(pattern=pattern, text=x, ...), ...))[-1])
+  result <- lapply(
+    text, function(x) unlist(
+      regmatches(
+        x = x,
+        m = regexec(
+          pattern = pattern,
+          text=x, ...),
+        ...)
+    )[-1]
+  )
   if (!dropEmpty) return(result)
   result[sapply(result, function(x) length(x) != 0)]
 }
 
 #' @title check whether character vector represents all numeric values
-#' @description check whether all the items of input vector are numeric without throwing warning
-#' derived from Hmsic package
+#' @description check whether all the items of input vector are numeric without
+#'   throwing warning derived from Hmsic package
 #' @param x is a character vector to be tested
-#' @param extras is a vector of character strings which are counted as NA values, defaults to '.' and 'NA'
+#' @param extras is a vector of character strings which are counted as NA
+#'   values, defaults to '.' and 'NA'
 #' @return logical
 #' @keywords internal
 allIsNumeric <- function(x, extras=c('.','NA')) {
@@ -84,7 +93,8 @@ allIsNumeric <- function(x, extras=c('.','NA')) {
 }
 
 #' @title convert factor or vector to character without warnings
-#' @description correctly converts factors to vectors, and then converts to character, which may silently introduce NAs
+#' @description correctly converts factors to vectors, and then converts to
+#'   character, which may silently introduce NAs
 #' @param x is a vector, probably of numbers of characters
 #' @return character vector, may have NA values
 #' @keywords internal
@@ -97,10 +107,10 @@ asCharacterNoWarn <- function(x) {
 
 #' @title convert factor or vector to numeric without warnings
 #' @aliases asIntegerNoWarn
-#' @description correctly converts factors to vectors, and then converts to 
+#' @description correctly converts factors to vectors, and then converts to
 #'   numeric or integer, which may silently introduce NAs. Invisible rounding
 #'   errors can be a problem going from numeric to integer, so consider adding
-#'   tolerance to this conversion.
+#'   tolerance to this conversion. \code{asIntegerNoWarn} silently \code{\link{floor}}s.
 #' @param x is a vector, probably of numbers of characters
 #' @keywords internal
 #' @return numeric vector, may have NA values
@@ -114,6 +124,14 @@ asNumericNoWarn <- function(x) {
 #' @rdname asNumericNoWarn
 asIntegerNoWarn <- function(x)
   as.integer(asNumericNoWarn(x))
+
+#' @rdname asNumericNoWarn
+areIntegers <- function(x) {
+  n <- asNumericNoWarn(x)
+  i <- abs(n - floor(n)) < 1e-9
+  i[is.na(i)] <- FALSE
+  i
+}
 
 #' @title inverse of \%in\%
 #' @description borrowed from Hmisc. See %in%
@@ -132,9 +150,43 @@ asIntegerNoWarn <- function(x)
 #'   @param path is a path name to destination folder for the data: no trailing slash.
 saveSourceTreeData <- function(varName, path="~/icd9/data") {
   stopifnot(file.exists(path))
-  save(list  = varName, 
+  save(list  = varName,
        envir = parent.frame(), # get from my parent
        file  = file.path(path, paste0(varName, ".RData")),
        compress="xz"
   )
+}
+
+#' @title read file from zip at URL
+#' @description downloads zip file, and opens named file \code{filename}, or the
+#'   single file in zip if \code{filename} is not specified. FUN is a function,
+#'   with additional arguments to FUN given by \dots.
+#' @param url character vector of length one containing URL of zip file.
+#' @param filename character vector of length one containing name of file to
+#'   extract from zip. If not specified, and the zip contains a single file,
+#'   then this single file will be used.
+#' @param FUN function used to process the file in the zip, defaults to
+#'   readLines. The first argument to FUN will be the path of the extracted
+#'   \code{filename}
+#' @param \dots further arguments to FUN
+#' @keywords internal
+read.zip.url <- function(url, filename = NULL, FUN = readLines, ...) {
+  zipfile <- tempfile()
+  download.file(url = url, destfile = zipfile, quiet = TRUE)
+  zipdir <- tempfile()
+  dir.create(zipdir)
+  unzip(zipfile, exdir = zipdir) # files="" so extract all
+  files <- list.files(zipdir)
+  if (is.null(filename)) {
+    if (length(files) == 1) {
+      filename <- files
+    } else {
+      stop("multiple files in zip, but no filename specified: ", paste(files, collapse = ", "))
+    }
+  } else { # filename specified
+    stopifnot(length(filename) ==1)
+    stopifnot(filename %in% files)
+  }
+  file <- paste(zipdir, files[1], sep="/")
+  do.call(FUN, args = c(list(file.path(zipdir, filename)), list(...)))
 }

@@ -3,18 +3,13 @@
 \alias{icd9DecimalToParts}
 \title{icd9DecimalToParts}
 \usage{
-icd9DecimalToParts(icd9Decimal, leadingZeroes = TRUE, minorEmpty = "",
-  invalidAction = c("ignore", "silent", "warn", "stop"))
+icd9DecimalToParts(icd9Decimal, minorEmpty = "",
+  invalidAction = icd9InvalidActions)
 }
 \arguments{
 \item{icd9Decimal}{character vector of ICD-9 codes. If fewer than five characters is given in a
 code, then the digits are greedily assigned to hundreds, then tens, then
 units, before the decimal parts. E.g. "10" becomes "010", not "0010"}
-
-\item{leadingZeroes}{logical whether to fill out major part with zeroes, or
-just truncate to the left. If E code, there is no valid code since
-E800-E999 is defined. V codes could be V0x or Vxx, and so could be zero
-padded.}
 
 \item{minorEmpty}{vector of length one, to be used in place of
 minor part of zero. Defaults to ""}

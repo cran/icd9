@@ -5,10 +5,36 @@
 \title{ICD9-CM diagnosis code lookup}
 \format{data frame}
 \source{
-\url{http://www.cdc.gov/nchs/icd/icd9cm.htm}
+\url{http://wonder.cdc.gov/wonder/sci_data/codes/icd9/type_txt/icd9cm.asp}
+
+Rich text descriptions here:
+  \url{http://www.cdc.gov/nchs/icd/icd9cm.htm}
+
+This is the more easily machine-readable source which is used for
+  \code{icd9CmDesc}
+  \url{http://www.cms.gov/Medicare/Coding/ICD9ProviderDiagnosticCodes/codes.html}
+
+\url{http://wonder.cdc.gov/wonder/help/icd.html}
+
+\url{http://wonder.cdc.gov/wonder/sci_data/codes/icd9/type_txt/icd9abb.asp}
+
+\url{http://wonder.cdc.gov/wonder/sci_data/codes/icd9/type_txt/icd9cm.asp}
+
+\url{http://wonder.cdc.gov/wonder/sci_data/codes/icd9/type_txt/icdcm.asp}
+
+\url{http://wonder.cdc.gov/wonder/sci_data/codes/icd9/type_txt/icd9abb.asp}
 }
 \description{
-short-form ICD-9 codes with short and long descriptions
+short-form ICD-9 codes with short and long descriptions. This
+  data is limited to the most detailed codes for each condition, and does not
+  include the higher level classification. E.g. 053 herpes is not included in
+  these data, but all the specific types are: 0530 0531 0531[0-4] 0532 0537
+  0538 and 0539.
+
+  From
+  \url{http://wonder.cdc.gov/wonder/sci_data/codes/icd9/type_txt/icd9cm.asp}
+  "Three-digit rubrics are not added to the main body of the classification:"
+  this is the source of the above problem.
 }
 \keyword{datasets}
 

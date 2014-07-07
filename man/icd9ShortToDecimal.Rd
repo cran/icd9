@@ -3,25 +3,12 @@
 \alias{icd9ShortToDecimal}
 \title{icd9ShortToDecimal}
 \usage{
-icd9ShortToDecimal(icd9Short, leadingZeroes = FALSE,
-  keepLoneDecimal = FALSE, invalidAction = c("ignore", "silent", "warn",
-  "stop"))
+icd9ShortToDecimal(icd9Short, invalidAction = icd9InvalidActions)
 }
 \arguments{
 \item{icd9Short}{is a character vector of ICD-9 codes. If fewer than five characters is given
 in a code, then the digits are greedily assigned to hundreds, then tens,
 then units, before the decimal parts. E.g. "10" becomes "010", not "0010"}
-
-\item{leadingZeroes}{logical whether to fill out major part with zeroes, or
-just truncate to the left. If E code, there is no valid code since
-E800-E999 is defined. V codes could be V0x or Vxx, and so could be zero
-padded.}
-
-\item{keepLoneDecimal}{logical. Since the presence or absence of a trailing
-zero in an ICD-9 code can make a difference, when converting to decimal, we
-have a situation where we do not want to add trailing zeroes, but may wish
-to preserve the decimal point. If this is desired, then set this value to
-TRUE.}
 
 \item{invalidAction}{character string (unit length) containing one of:
   "ignore", "silent", "warn", "stop"
@@ -45,6 +32,21 @@ TRUE.}
 }
 \description{
 converts ICD-9 'short' form to decimal form
+}
+\seealso{
+Other ICD-9 convert: \code{\link{icd9DecimalToShort}};
+  \code{\link{icd9DropLeadingZeroes}},
+  \code{\link{icd9DropLeadingZeroesDecimal}},
+  \code{\link{icd9DropLeadingZeroesMajor}},
+  \code{\link{icd9DropLeadingZeroesShort}};
+  \code{\link{icd9MajMinToDecimal}},
+  \code{\link{icd9MajMinToParts}},
+  \code{\link{icd9MajMinToShort}},
+  \code{\link{icd9PartsRecompose}},
+  \code{\link{icd9PartsToDecimal}},
+  \code{\link{icd9PartsToDecimal}},
+  \code{\link{icd9PartsToShort}},
+  \code{\link{icd9PartsToShort}}
 }
 \keyword{manip}
 

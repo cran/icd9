@@ -6,7 +6,8 @@
 \title{merge comorbidities with icd9 codes per visitId (or other identity)}
 \usage{
 icd9Comorbidities(icd9df, visitId = "visitId", icd9Field = "icd9",
-  icd9Mapping = ahrqComorbid, validateMapping = F, shortMapping = T)
+  icd9Mapping = ahrqComorbid, validateMapping = FALSE,
+  isShortMapping = TRUE)
 
 icd9ComorbiditiesNotPoa(icd9df, icd9Mapping, visitId = "visitId",
   icd9Field = "icd9Code", poaField = "poa")
@@ -43,7 +44,7 @@ since there should never be an error in mapping. There is overhead to check
 the mapping each time, so not done by default. Could consider using
 \code{memoise} to cache the result of the check. (TODO)}
 
-\item{shortMapping}{logical, whether the mapping is defined with short ICD-9
+\item{isShortMapping}{logical, whether the mapping is defined with short ICD-9
 codes (TRUE, the default), or decimal if set to FALSE.}
 
 \item{poaField}{The name of column in the data frame which contains the

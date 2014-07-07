@@ -6,8 +6,7 @@
 \usage{
 icd9SubsequentMinors(minor)
 
-icd9PrecedingMinors(minor, invalidAction = c("ignore", "silent", "warn",
-  "stop"))
+icd9PrecedingMinors(minor, invalidAction = icd9InvalidActions)
 }
 \arguments{
 \item{minor}{character vector of 'minor' part of ICD-9 codes, i.e. that part
@@ -24,7 +23,9 @@ this is not simply numeric, since "4" is after "39" and "0" !=
 \seealso{
 Other ICD-9 ranges: \code{\link{\%i9d\%}},
   \code{\link{icd9ExpandRangeDecimal}};
-  \code{\link{\%i9mj\%}}; \code{\link{\%i9s\%}},
+  \code{\link{\%i9mj\%}},
+  \code{\link{icd9ExpandRangeMajor}};
+  \code{\link{\%i9s\%}},
   \code{\link{icd9ExpandRangeShort}};
   \code{\link{icd9ChildrenDecimal}};
   \code{\link{icd9Children}},

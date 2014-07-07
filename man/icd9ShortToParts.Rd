@@ -3,8 +3,8 @@
 \alias{icd9ShortToParts}
 \title{extract major and minor parts of a decimal ICD-9 code}
 \usage{
-icd9ShortToParts(icd9Short, minorEmpty = "", invalidAction = c("ignore",
-  "silent", "warn", "stop"))
+icd9ShortToParts(icd9Short, minorEmpty = "",
+  invalidAction = icd9InvalidActions)
 }
 \arguments{
 \item{icd9Short}{is a character vector of ICD-9 codes. If fewer than five characters is given
@@ -36,9 +36,7 @@ minor part of zero. Defaults to ""}
 }
 \value{
 data.frame with two columns. At least the minor part must be
-  character, because "03" is different to "3", but "30" is the same as "3" at
-  least in ICD-9 if leadingZeroes is true, then the major part must also be
-  character.
+  character, because "03" is different to "3", but "30" is the same as "3"
 }
 \description{
 accepts Vxxxx Exxxx or xxxxx

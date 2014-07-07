@@ -4,8 +4,8 @@
 \alias{icd9ExpandRangeShort}
 \title{take two ICD-9 codes and expand range to include all child codes}
 \usage{
-icd9ExpandRangeShort(start, end, invalidAction = c("ignore", "silent", "warn",
-  "stop"))
+icd9ExpandRangeShort(start, end, inferParents = TRUE,
+  invalidAction = icd9InvalidActions)
 
 start \%i9s\% end
 }
@@ -13,6 +13,12 @@ start \%i9s\% end
 \item{start,end}{is a character vector of ICD-9 codes. If fewer than five characters is given
 in a code, then the digits are greedily assigned to hundreds, then tens,
 then units, before the decimal parts. E.g. "10" becomes "010", not "0010"}
+
+\item{inferParents}{single logical value, if TRUE, will infer and include a
+parent code if a range ends with a value which terminates a higher-level
+code. E.g. "043" %i9s% "0449" . "0449" expands out to 04499, and thus all
+the codes from 0440 to 04499, are covered, but "044" is not explicit. If
+\code{inferParents} is TRUE, "044" would be added, otherwise omitted.}
 
 \item{invalidAction}{character string (unit length) containing one of:
   "ignore", "silent", "warn", "stop"
@@ -54,7 +60,8 @@ icd9ExpandRangeShort("4280 ", "43014")
 \seealso{
 Other ICD-9 ranges: \code{\link{\%i9d\%}},
   \code{\link{icd9ExpandRangeDecimal}};
-  \code{\link{\%i9mj\%}};
+  \code{\link{\%i9mj\%}},
+  \code{\link{icd9ExpandRangeMajor}};
   \code{\link{icd9ChildrenDecimal}};
   \code{\link{icd9Children}},
   \code{\link{icd9ChildrenShort}};

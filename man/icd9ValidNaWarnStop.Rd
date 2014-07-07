@@ -2,15 +2,18 @@
 \name{icd9ValidNaWarnStop}
 \alias{icd9ValidNaWarnStop}
 \alias{icd9ValidNaWarnStopDecimal}
+\alias{icd9ValidNaWarnStopMajor}
 \alias{icd9ValidNaWarnStopShort}
 \title{stop, warn, replace invalid with NA or continue}
 \usage{
-icd9ValidNaWarnStop(icd9, short, invalidAction = c("ignore", "silent", "warn",
-  "stop"))
+icd9ValidNaWarnStop(icd9, isShort, isMajor = FALSE,
+  invalidAction = icd9InvalidActions)
 
-icd9ValidNaWarnStopShort(icd9, invalidAction)
+icd9ValidNaWarnStopShort(icd9Short, invalidAction)
 
-icd9ValidNaWarnStopDecimal(icd9, invalidAction)
+icd9ValidNaWarnStopDecimal(icd9Decimal, invalidAction)
+
+icd9ValidNaWarnStopMajor(major, invalidAction)
 }
 \arguments{
 \item{icd9}{is a character vector of ICD-9 codes. If fewer than five characters is
@@ -18,7 +21,7 @@ given in a code, then the digits are greedily assigned to hundreds, then
 tens, then units, before the decimal parts. E.g. "10" becomes "010", not
 "0010"}
 
-\item{short}{single logical value which determines whether the ICD-9 code provided is in short (TRUE) or decimal (FALSE) form.}
+\item{isShort}{single logical value which determines whether the ICD-9 code provided is in short (TRUE) or decimal (FALSE) form.}
 
 \item{invalidAction}{character string (unit length) containing one of:
   "ignore", "silent", "warn", "stop"
@@ -39,12 +42,26 @@ tens, then units, before the decimal parts. E.g. "10" becomes "010", not
   - \code{stop} stop with error if any invalid codes are found in input. This
   is the preferred method when doing one-time validation, e.g. of the
   co-morbidity mapping lists.}
+
+\item{major}{character vector of 'major' part of ICD-9 codes, i.e. that part
+which falls before the decimal point, in decimal notation. (In 5 digit
+notation, the 'major' part is be the first three characters (with leading
+zeroes), and includes V or E prefix. xyz}
+
+\item{icd9Short}{is a character vector of ICD-9 codes. If fewer than five characters is given
+in a code, then the digits are greedily assigned to hundreds, then tens,
+then units, before the decimal parts. E.g. "10" becomes "010", not "0010"}
+
+\item{icd9Decimal}{character vector of ICD-9 codes. If fewer than five characters is given in a
+code, then the digits are greedily assigned to hundreds, then tens, then
+units, before the decimal parts. E.g. "10" becomes "010", not "0010"}
 }
 \value{
 icd9 codes, with invalid codes replaced by NA, if \code{invalidAction != "ignore"}
 }
 \description{
 Switch based on \code{invalidAction}
+If \code{major} is provided, then \code{isShort} is ignored.
 }
 \seealso{
 Other ICD9 validation: \code{\link{icd9GetInvalidMappingDecimal}},
@@ -54,18 +71,15 @@ Other ICD9 validation: \code{\link{icd9GetInvalidMappingDecimal}},
   \code{\link{icd9ValidMappingShort}};
   \code{\link{icd9ValidDecimal}},
   \code{\link{icd9ValidDecimalE}},
-  \code{\link{icd9ValidDecimalE}},
   \code{\link{icd9ValidDecimalN}},
-  \code{\link{icd9ValidDecimalN}},
-  \code{\link{icd9ValidDecimalV}},
   \code{\link{icd9ValidDecimalV}};
-  \code{\link{icd9ValidMajor}};
+  \code{\link{icd9ValidMajor}},
+  \code{\link{icd9ValidMajorE}},
+  \code{\link{icd9ValidMajorN}},
+  \code{\link{icd9ValidMajorV}};
   \code{\link{icd9ValidShort}},
   \code{\link{icd9ValidShortE}},
-  \code{\link{icd9ValidShortE}},
   \code{\link{icd9ValidShortN}},
-  \code{\link{icd9ValidShortN}},
-  \code{\link{icd9ValidShortV}},
   \code{\link{icd9ValidShortV}}; \code{\link{icd9Valid}};
   \code{\link{stopIfInvalidIcd9}},
   \code{\link{warnIfInvalidIcd9}}

@@ -12,7 +12,8 @@ asCharacterNoWarn(x)
 character vector, may have NA values
 }
 \description{
-correctly converts factors to vectors, and then converts to character, which may silently introduce NAs
+correctly converts factors to vectors, and then converts to
+  character, which may silently introduce NAs
 }
 \keyword{internal}
 

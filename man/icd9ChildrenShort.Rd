@@ -4,10 +4,9 @@
 \alias{icd9ChildrenShort}
 \title{expand 5 character form 'short' ICD9 to all possible sub codes}
 \usage{
-icd9ChildrenShort(icd9Short, invalidAction = c("ignore", "silent", "warn",
-  "stop"))
+icd9ChildrenShort(icd9Short, invalidAction = icd9InvalidActions)
 
-icd9Children(icd9, short)
+icd9Children(icd9, isShort)
 }
 \arguments{
 \item{icd9Short}{is a character vector of ICD-9 codes. If fewer than five characters is given
@@ -34,14 +33,14 @@ then units, before the decimal parts. E.g. "10" becomes "010", not "0010"}
   is the preferred method when doing one-time validation, e.g. of the
   co-morbidity mapping lists.}
 
-\item{short}{single logical value which determines whether the ICD-9 code provided is in short (TRUE) or decimal (FALSE) form.}
+\item{isShort}{single logical value which determines whether the ICD-9 code provided is in short (TRUE) or decimal (FALSE) form.}
 
 \item{icd9}{is a character vector of ICD-9 codes. If fewer than five characters is
 given in a code, then the digits are greedily assigned to hundreds, then
 tens, then units, before the decimal parts. E.g. "10" becomes "010", not
 "0010"}
 
-\item{short}{single logical value which determines whether the ICD-9 code provided is in short (TRUE) or decimal (FALSE) form.}
+\item{isShort}{single logical value which determines whether the ICD-9 code provided is in short (TRUE) or decimal (FALSE) form.}
 }
 \description{
 this is so the raw info from SAS code provided by AHRQ can be
@@ -50,7 +49,9 @@ this is so the raw info from SAS code provided by AHRQ can be
 \seealso{
 Other ICD-9 ranges: \code{\link{\%i9d\%}},
   \code{\link{icd9ExpandRangeDecimal}};
-  \code{\link{\%i9mj\%}}; \code{\link{\%i9s\%}},
+  \code{\link{\%i9mj\%}},
+  \code{\link{icd9ExpandRangeMajor}};
+  \code{\link{\%i9s\%}},
   \code{\link{icd9ExpandRangeShort}};
   \code{\link{icd9ChildrenDecimal}};
   \code{\link{icd9CondenseShort}};
@@ -63,7 +64,9 @@ Other ICD-9 ranges: \code{\link{\%i9d\%}},
 
 Other ICD-9 ranges: \code{\link{\%i9d\%}},
   \code{\link{icd9ExpandRangeDecimal}};
-  \code{\link{\%i9mj\%}}; \code{\link{\%i9s\%}},
+  \code{\link{\%i9mj\%}},
+  \code{\link{icd9ExpandRangeMajor}};
+  \code{\link{\%i9s\%}},
   \code{\link{icd9ExpandRangeShort}};
   \code{\link{icd9ChildrenDecimal}};
   \code{\link{icd9CondenseShort}};

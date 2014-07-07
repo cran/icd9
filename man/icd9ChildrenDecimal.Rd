@@ -3,8 +3,7 @@
 \alias{icd9ChildrenDecimal}
 \title{generate all child codes for given decimal ICD9 codes}
 \usage{
-icd9ChildrenDecimal(icd9Decimal, invalidAction = c("ignore", "silent", "warn",
-  "stop"))
+icd9ChildrenDecimal(icd9Decimal, invalidAction = icd9InvalidActions)
 }
 \arguments{
 \item{icd9Decimal}{character vector of ICD-9 codes. If fewer than five characters is given in a
@@ -50,7 +49,9 @@ take ICD9 codes in decimal form and lists of all possible
 \seealso{
 Other ICD-9 ranges: \code{\link{\%i9d\%}},
   \code{\link{icd9ExpandRangeDecimal}};
-  \code{\link{\%i9mj\%}}; \code{\link{\%i9s\%}},
+  \code{\link{\%i9mj\%}},
+  \code{\link{icd9ExpandRangeMajor}};
+  \code{\link{\%i9s\%}},
   \code{\link{icd9ExpandRangeShort}};
   \code{\link{icd9Children}},
   \code{\link{icd9ChildrenShort}};
