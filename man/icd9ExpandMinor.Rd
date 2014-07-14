@@ -5,7 +5,7 @@
 \alias{icd9ExpandMinorNV}
 \title{expand decimal part of ICD-9 code to cover all possible sub-codes}
 \usage{
-icd9ExpandMinor(minor = "", invalidAction = icd9InvalidActions)
+icd9ExpandMinor(minor = "", isE, invalidAction = icd9InvalidActions)
 
 icd9ExpandMinorNV(minor = "")
 
@@ -16,6 +16,10 @@ icd9ExpandMinorE(minor = "")
 which falls after the decimal point, in decimal notation. (In 5 digit
 notation, the 'major' part is be xyz, even when x and y are zero, thus the
 last two characters represent the 'minor' part, in this case.)}
+
+\item{isE}{single logical, which if TRUE, treats the minor as part of an E
+code (which is one character), as opposed to a V or numeric-only code,
+which is two character. No default.}
 }
 \value{
 NA for invalid minor, otherwise a vector of all possible (perhaps
@@ -25,9 +29,9 @@ NA for invalid minor, otherwise a vector of all possible (perhaps
 Accepts a single number or character input starting point for
   generation of all possible decimal parts of ICD9 code. e.g. giving an empty
   input will fill out 111 combinations, e..g .1 .11 .12 .... .2 ....
-#examples #icd9ExpandMinor() # return all possible decimal parts of ICD9 codes
-icd9ExpandMinor(1) # "1"  "10" "11" "12" "13" "14" "15" "16" "17" "18" "19"
-icd9ExpandMinor("1") # same
+  #examples #icd9ExpandMinor(isE = FALSE) # return all possible decimal parts of ICD9
+  codes icd9ExpandMinor(1) # "1"  "10" "11" "12" "13" "14" "15" "16" "17"
+  "18" "19" icd9ExpandMinor("1") # same
 }
 \seealso{
 Other ICD-9 ranges: \code{\link{\%i9d\%}},
@@ -39,8 +43,8 @@ Other ICD-9 ranges: \code{\link{\%i9d\%}},
   \code{\link{icd9ChildrenDecimal}};
   \code{\link{icd9Children}},
   \code{\link{icd9ChildrenShort}};
-  \code{\link{icd9CondenseShort}};
-  \code{\link{icd9CondenseToExplainShort}};
+  \code{\link{icd9CondenseToExplain}};
+  \code{\link{icd9CondenseToMajor}};
   \code{\link{icd9PrecedingMinors}},
   \code{\link{icd9SubsequentMinors}}
 }

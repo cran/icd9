@@ -4,9 +4,10 @@
 \alias{icd9ChildrenShort}
 \title{expand 5 character form 'short' ICD9 to all possible sub codes}
 \usage{
-icd9ChildrenShort(icd9Short, invalidAction = icd9InvalidActions)
+icd9ChildrenShort(icd9Short, onlyReal = FALSE,
+  invalidAction = icd9InvalidActions)
 
-icd9Children(icd9, isShort)
+icd9Children(icd9, onlyReal = FALSE, isShort)
 }
 \arguments{
 \item{icd9Short}{is a character vector of ICD-9 codes. If fewer than five characters is given
@@ -33,8 +34,6 @@ then units, before the decimal parts. E.g. "10" becomes "010", not "0010"}
   is the preferred method when doing one-time validation, e.g. of the
   co-morbidity mapping lists.}
 
-\item{isShort}{single logical value which determines whether the ICD-9 code provided is in short (TRUE) or decimal (FALSE) form.}
-
 \item{icd9}{is a character vector of ICD-9 codes. If fewer than five characters is
 given in a code, then the digits are greedily assigned to hundreds, then
 tens, then units, before the decimal parts. E.g. "10" becomes "010", not
@@ -43,8 +42,7 @@ tens, then units, before the decimal parts. E.g. "10" becomes "010", not
 \item{isShort}{single logical value which determines whether the ICD-9 code provided is in short (TRUE) or decimal (FALSE) form.}
 }
 \description{
-this is so the raw info from SAS code provided by AHRQ can be
-  interpreted without manually reformatting.
+expand 5 character form 'short' ICD9 to all possible sub codes
 }
 \seealso{
 Other ICD-9 ranges: \code{\link{\%i9d\%}},
@@ -54,8 +52,8 @@ Other ICD-9 ranges: \code{\link{\%i9d\%}},
   \code{\link{\%i9s\%}},
   \code{\link{icd9ExpandRangeShort}};
   \code{\link{icd9ChildrenDecimal}};
-  \code{\link{icd9CondenseShort}};
-  \code{\link{icd9CondenseToExplainShort}};
+  \code{\link{icd9CondenseToExplain}};
+  \code{\link{icd9CondenseToMajor}};
   \code{\link{icd9ExpandMinor}},
   \code{\link{icd9ExpandMinorE}},
   \code{\link{icd9ExpandMinorNV}};
@@ -69,8 +67,8 @@ Other ICD-9 ranges: \code{\link{\%i9d\%}},
   \code{\link{\%i9s\%}},
   \code{\link{icd9ExpandRangeShort}};
   \code{\link{icd9ChildrenDecimal}};
-  \code{\link{icd9CondenseShort}};
-  \code{\link{icd9CondenseToExplainShort}};
+  \code{\link{icd9CondenseToExplain}};
+  \code{\link{icd9CondenseToMajor}};
   \code{\link{icd9ExpandMinor}},
   \code{\link{icd9ExpandMinorE}},
   \code{\link{icd9ExpandMinorNV}};

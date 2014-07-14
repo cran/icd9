@@ -2,7 +2,8 @@
 \name{icd9ExpandRangeDecimal}
 \alias{\%i9d\%}
 \alias{icd9ExpandRangeDecimal}
-\title{expand range of ICD-9 decimal codes to all possible intermediate and sub-codes}
+\title{expand range of ICD-9 decimal codes to all possible intermediate and
+  sub-codes}
 \usage{
 icd9ExpandRangeDecimal(start, end, invalidAction = c("stop", "ignore",
   "silent", "warn"))
@@ -31,7 +32,9 @@ start \%i9d\% end
   co-morbidity mapping lists.}
 }
 \description{
-As with \code{link{icd9ExpandRangeShort}} great care is taken not to include codes which have children not in the range. E.g. "100.9" to "101.1" would _not_ include code "101".
+As with \code{link{icd9ExpandRangeShort}} great care is taken
+  not to include codes which have children not in the range. E.g. "100.9" to
+  "101.1" would _not_ include code "101".
 }
 \seealso{
 Other ICD-9 ranges: \code{\link{\%i9mj\%}},
@@ -41,8 +44,8 @@ Other ICD-9 ranges: \code{\link{\%i9mj\%}},
   \code{\link{icd9ChildrenDecimal}};
   \code{\link{icd9Children}},
   \code{\link{icd9ChildrenShort}};
-  \code{\link{icd9CondenseShort}};
-  \code{\link{icd9CondenseToExplainShort}};
+  \code{\link{icd9CondenseToExplain}};
+  \code{\link{icd9CondenseToMajor}};
   \code{\link{icd9ExpandMinor}},
   \code{\link{icd9ExpandMinorE}},
   \code{\link{icd9ExpandMinorNV}};

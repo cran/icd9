@@ -3,8 +3,7 @@
 \alias{parseQuanElixhauser}
 \title{Generate Quan's revised Elixhauser comorbidities}
 \usage{
-parseQuanElixhauser(condense = FALSE, save = FALSE,
-  saveDir = "~/icd9/data")
+parseQuanElixhauser(condense = FALSE, save = FALSE, path = "~/icd9/data")
 }
 \arguments{
 \item{condense}{logical whether to condense the result ranges to the minimal
@@ -15,7 +14,7 @@ without further processing. Small memory versus time trade-off.}
 \item{save}{logical whether to save the result in the source tree. Defaults
 to \code{FALSE}.}
 
-\item{saveDir}{path to directory to save the data. This is typically the data
+\item{path}{path to directory to save the data. This is typically the data
 folder in the devleopment source tree. Defaults to \code{"~/icd9/data"}.
 Could possibly avoid hard-coding path with devtools functions.}
 }

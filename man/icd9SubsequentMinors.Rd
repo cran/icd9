@@ -4,9 +4,9 @@
 \alias{icd9SubsequentMinors}
 \title{determine preceding or subsequent post-decimal parts of ICD9 codes}
 \usage{
-icd9SubsequentMinors(minor)
+icd9SubsequentMinors(minor, isE)
 
-icd9PrecedingMinors(minor, invalidAction = icd9InvalidActions)
+icd9PrecedingMinors(minor, isE)
 }
 \arguments{
 \item{minor}{character vector of 'minor' part of ICD-9 codes, i.e. that part
@@ -30,8 +30,8 @@ Other ICD-9 ranges: \code{\link{\%i9d\%}},
   \code{\link{icd9ChildrenDecimal}};
   \code{\link{icd9Children}},
   \code{\link{icd9ChildrenShort}};
-  \code{\link{icd9CondenseShort}};
-  \code{\link{icd9CondenseToExplainShort}};
+  \code{\link{icd9CondenseToExplain}};
+  \code{\link{icd9CondenseToMajor}};
   \code{\link{icd9ExpandMinor}},
   \code{\link{icd9ExpandMinorE}},
   \code{\link{icd9ExpandMinorNV}}

@@ -1,43 +1,39 @@
 #' @title ICD-9-CM chapters
-#' @name icd9CmChapters
-#' @description these are the top level chapter groupings. Not huge clinical signicance, but may be helpful in summarizing codes, grouping for human-readable output, and possibly as an input signal in case matching.
-#' \itemize{
-#' \item 001-139 Infectious And Parasitic Diseases
-#' \item 140-239 Neoplasms
-#' \item 240-279 Endocrine, Nutritional And Metabolic Diseases, And Immunity Disorders
-#' \item 280-289 Diseases Of The Blood And Blood-Forming Organs
-#' \item 290-319 Mental Disorders
-#' \item 320-389 Diseases Of The Nervous System And Sense Organs
-#' \item 390-459 Diseases Of The Circulatory System
-#' \item 460-519 Diseases Of The Respiratory System
-#' \item 520-579 Diseases Of The Digestive System
-#' \item 580-629 Diseases Of The Genitourinary System
-#' \item 630-679 Complications Of Pregnancy, Childbirth, And The Puerperium
-#' \item 680-709 Diseases Of The Skin And Subcutaneous Tissue
-#' \item 710-739 Diseases Of The Musculoskeletal System And Connective Tissue
-#' \item 740-759 Congenital Anomalies
-#' \item 760-779 Certain Conditions Originating In The Perinatal Period
-#' \item 780-799 Symptoms, Signs, And Ill-Defined Conditions
-#' \item 800-999 Injury And Poisoning
-#' \item V01-V91 Supplementary Classification Of Factors Influencing Health Status And Contact With Health Services
-#' \item E000-E999 Supplementary Classification Of External Causes Of Injury And Poisoning
-#' }
-#' @keywords datasets list
+#' @name icd9Chapters
+#' @aliases icd9ChaptersSub icd9ChaptersMajor
+#' @description \code{icd9Chapters}, \code{icd9ChaptersSub} and
+#'   \code{icd9ChaptersMajor} contain mappings from the higher level
+#'   descriptions of ICD-9 codes to the ranges of ICD-9 codes they describe.
+#'   Helpful in summarizing codes or grouping for human-readable output. These
+#'   can easily be converted to a co-morbidity mapping, as shown in the
+#'   vignette.
+#'
+#'   \itemize{ \item 001-139 Infectious And Parasitic Diseases \item 140-239
+#'   Neoplasms \item 240-279 Endocrine, Nutritional And Metabolic Diseases, And
+#'   Immunity Disorders \item 280-289 Diseases Of The Blood And Blood-Forming
+#'   Organs \item 290-319 Mental Disorders \item 320-389 Diseases Of The Nervous
+#'   System And Sense Organs \item 390-459 Diseases Of The Circulatory System
+#'   \item 460-519 Diseases Of The Respiratory System \item 520-579 Diseases Of
+#'   The Digestive System \item 580-629 Diseases Of The Genitourinary System
+#'   \item 630-679 Complications Of Pregnancy, Childbirth, And The Puerperium
+#'   \item 680-709 Diseases Of The Skin And Subcutaneous Tissue \item 710-739
+#'   Diseases Of The Musculoskeletal System And Connective Tissue \item 740-759
+#'   Congenital Anomalies \item 760-779 Certain Conditions Originating In The
+#'   Perinatal Period \item 780-799 Symptoms, Signs, And Ill-Defined Conditions
+#'   \item 800-999 Injury And Poisoning \item V01-V91 Supplementary
+#'   Classification Of Factors Influencing Health Status And Contact With Health
+#'   Services \item E000-E999 Supplementary Classification Of External Causes Of
+#'   Injury And Poisoning }
+#'
+#' @keywords datasets list category
 #' @docType data
-#' @format list with chapter names stored in list names, each with two element named character vector with start and end codes.
+#' @format list with chapter/usb-chapter or major names stored in list names, each with two element
+#'   named character vector with start and end codes.
 NULL
 
 #' @title ICD9-CM diagnosis code lookup
-#' @description short-form ICD-9 codes with short and long descriptions. This
-#'   data is limited to the most detailed codes for each condition, and does not
-#'   include the higher level classification. E.g. 053 herpes is not included in
-#'   these data, but all the specific types are: 0530 0531 0531[0-4] 0532 0537
-#'   0538 and 0539.
-#'
-#'   From
-#'   \url{http://wonder.cdc.gov/wonder/sci_data/codes/icd9/type_txt/icd9cm.asp}
-#'   "Three-digit rubrics are not added to the main body of the classification:"
-#'   this is the source of the above problem.
+#' @description short-form ICD-9 codes with short and long descriptions, and
+#'   description of each hierarchy level containing each code.
 #' @docType data
 #' @keywords datasets
 #' @format data frame
@@ -45,15 +41,20 @@ NULL
 #' \url{http://wonder.cdc.gov/wonder/sci_data/codes/icd9/type_txt/icd9cm.asp}
 #' @source Rich text descriptions here:
 #'   \url{http://www.cdc.gov/nchs/icd/icd9cm.htm}
-#' @source This is the more easily machine-readable source which is used for
-#'   \code{icd9CmDesc}
 #'   \url{http://www.cms.gov/Medicare/Coding/ICD9ProviderDiagnosticCodes/codes.html}
+#'    This page has versions 23 to 32 (2005 to 2014). At present, only the 2014
+#'   data is included in this package.
+#'
 #' @source \url{http://wonder.cdc.gov/wonder/help/icd.html}
-#' @source \url{http://wonder.cdc.gov/wonder/sci_data/codes/icd9/type_txt/icd9abb.asp}
-#' @source \url{http://wonder.cdc.gov/wonder/sci_data/codes/icd9/type_txt/icd9cm.asp}
-#' @source \url{http://wonder.cdc.gov/wonder/sci_data/codes/icd9/type_txt/icdcm.asp}
-#' @source \url{http://wonder.cdc.gov/wonder/sci_data/codes/icd9/type_txt/icd9abb.asp}
-#' @name icd9CmDesc
+#' @source
+#' \url{http://wonder.cdc.gov/wonder/sci_data/codes/icd9/type_txt/icd9abb.asp}
+#' @source
+#' \url{http://wonder.cdc.gov/wonder/sci_data/codes/icd9/type_txt/icd9cm.asp}
+#' @source
+#' \url{http://wonder.cdc.gov/wonder/sci_data/codes/icd9/type_txt/icdcm.asp}
+#' @source
+#' \url{http://wonder.cdc.gov/wonder/sci_data/codes/icd9/type_txt/icd9abb.asp}
+#' @name icd9Hierarchy
 NULL
 
 #' @title AHRQ comorbidities
@@ -85,7 +86,13 @@ NULL
 #' @title Quan adaptation of Deyo/Charlson comorbidities
 #' @description Derived programmatically from the SAS code used in the original
 #'   publication. According to the referenced study, this provides the best
-#'   presdictor of in-patient to <30d mortality.
+#'   presdictor of in-patient to <30d mortality. Of note, Deyo drops the
+#'   distinction between leukemia, lymphoma and non-metastatic cancer. As far as
+#'   I have looked into this, in the rare cases where someone had two or three
+#'   of leukemia, lymphoma and non-metastatic cancer, the Quan adaptation would
+#'   give a lower Charlson score than the original scheme. The Deyo original
+#'   Charlson to ICD-9-CM groups does include distinct categories for these
+#'   things.
 #' @docType data
 #' @keywords datasets
 #' @format list of character vectors, each named by co-morbidity
@@ -94,7 +101,8 @@ NULL
 #'   Beck, Thomas E. Feasby, and William A. Ghali. "Coding Algorithms for
 #'   Defining Comorbidities in ICD-9-CM and ICD-10 Administrative Data." Medical
 #'   Care 43, no. 11 (November 1, 2005): 1130-39.
-#'   \url{http://www.ncbi.nlm.nih.gov/pubmed/16224307}
+#'   \url{http://www.ncbi.nlm.nih.gov/pubmed/16224307} unavailable: unavailable:
+#'   \url{http://web.archive.org/web/20110225042437/http://www.chaps.ucalgary.ca/sas}
 #' @name quanDeyoComorbid
 NULL
 
@@ -108,7 +116,9 @@ NULL
 #'   Beck, Thomas E. Feasby, and William A. Ghali. "Coding Algorithms for
 #'   Defining Comorbidities in ICD-9-CM and ICD-10 Administrative Data." Medical
 #'   Care 43, no. 11 (November 1, 2005): 1130-39.
-#'   \url{http://www.ncbi.nlm.nih.gov/pubmed/16224307}
+#'   \url{http://www.ncbi.nlm.nih.gov/pubmed/16224307} unavailable:
+#'   \url{http://web.archive.org/web/20110225042437/http://www.chaps.ucalgary.ca/sas}
+#'
 #' @name quanElixhauserComorbid
 NULL
 
@@ -133,3 +143,27 @@ NULL
 #'   January 1998 36, no. 1 (1998): 8-27.
 #' @name elixhauserComorbid
 NULL
+
+#' @title Comorbidity names
+#' @description In the Elixhauser derived mappings, uncomplicated and
+#'   complicated hypertension are listed separately, but are always combined in
+#'   the final analyses. Uncomplicated and complicated hypertension are list
+#'   separately and as "Hypertension, combined." Abbrev suffix indicates a very
+#'   short space-free description. Quan's version of Elixhauser is identical.
+#'   AHRQ's update drops the arrythmia field. The Naming convention with
+#'   neither/either/both suffixes \code{Htn} and \code{Abbrev}. The Charlson
+#'   derived mappings do not include hypertension.
+#' @format list, with character/numeric code. HTN numbered 6a and 6b. DM,
+#'   cancer, mets are counted as in the original paper giving the original 30
+#'   groups. "01" to "30"
+#' @name elixhauserComorbidNames
+#' @aliases elixhauserComorbidNamesAbbrev elixhauserComorbidNamesHtn
+#'   elixhauserComorbidNamesHtnAbbrev quanElixhauserComorbidNames
+#'   quanElixhauserComorbidNamesAbbrev quanElixhauserComorbidNamesHtn
+#'   quanElixhauserComorbidNamesHtnAbbrev ahrqComorbidNames
+#'   ahrqComorbidNamesAbbrev ahrqComorbidNamesHtn ahrqComorbidNamesHtnAbbrev
+#'   charlsonComorbidNames charlsonComorbidNamesAbbrev
+#' @keywords datasets
+#' @docType data
+NULL
+

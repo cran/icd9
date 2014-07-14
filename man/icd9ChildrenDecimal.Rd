@@ -3,12 +3,20 @@
 \alias{icd9ChildrenDecimal}
 \title{generate all child codes for given decimal ICD9 codes}
 \usage{
-icd9ChildrenDecimal(icd9Decimal, invalidAction = icd9InvalidActions)
+icd9ChildrenDecimal(icd9Decimal, onlyReal = FALSE,
+  invalidAction = icd9InvalidActions)
 }
 \arguments{
 \item{icd9Decimal}{character vector of ICD-9 codes. If fewer than five characters is given in a
 code, then the digits are greedily assigned to hundreds, then tens, then
 units, before the decimal parts. E.g. "10" becomes "010", not "0010"}
+
+\item{onlyReal}{single logical value, if TRUE, will limit the search to those
+codes which appear in the master list, not just syntactically valid codes.
+Since nearly valid, out-dated or new codes may be missed, not limiting to
+'real' values will be useful. Ultimately, there will need to be annual (and
+all-time) master lists of codes and the ability to test against a given
+master list given the year of the ICD-9 coding.}
 
 \item{invalidAction}{character string (unit length) containing one of:
   "ignore", "silent", "warn", "stop"
@@ -55,8 +63,8 @@ Other ICD-9 ranges: \code{\link{\%i9d\%}},
   \code{\link{icd9ExpandRangeShort}};
   \code{\link{icd9Children}},
   \code{\link{icd9ChildrenShort}};
-  \code{\link{icd9CondenseShort}};
-  \code{\link{icd9CondenseToExplainShort}};
+  \code{\link{icd9CondenseToExplain}};
+  \code{\link{icd9CondenseToMajor}};
   \code{\link{icd9ExpandMinor}},
   \code{\link{icd9ExpandMinorE}},
   \code{\link{icd9ExpandMinorNV}};

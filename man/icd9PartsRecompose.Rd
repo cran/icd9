@@ -58,8 +58,10 @@ internal function which checks vector lengths to avoid
 icd9MajMinToDf simply composes the data frame needed
   as input to the PartsToXxxx functions
 
-icd9MajMinTo\{Short|Decimal\} simply composes the data frame needed
-  as input to the PartsToXxxx functions. Having two inputs breaks the ability to 'pipe' commands together using \link{magrittr}, so passing a single \code{data.frame} is preferred.
+icd9MajMinTo\{Short|Decimal\} simply composes the data frame
+  needed as input to the PartsToXxxx functions. Having two inputs breaks the
+  ability to 'pipe' commands together using \code{magrittr}, so passing a
+  single \code{data.frame} is preferred.
 }
 \seealso{
 Other ICD-9 convert: \code{\link{icd9DecimalToShort}};

@@ -4,7 +4,7 @@
 \title{parse original SAS code defining Quan's update of Deyo comorbidities.}
 \usage{
 parseQuanDeyoSas(sasPath = NULL, condense = FALSE, save = FALSE,
-  saveDir = "~/icd9/data")
+  path = "~/icd9/data")
 }
 \arguments{
 \item{sasPath}{single character string containing path or URL for some SAS
@@ -24,7 +24,7 @@ without further processing. Small memory versus time trade-off.}
 \item{save}{logical whether to save the result in the source tree. Defaults
 to \code{FALSE}.}
 
-\item{saveDir}{path to directory to save the data. This is typically the data
+\item{path}{path to directory to save the data. This is typically the data
 folder in the devleopment source tree. Defaults to \code{"~/icd9/data"}.
 Could possibly avoid hard-coding path with devtools functions.}
 }

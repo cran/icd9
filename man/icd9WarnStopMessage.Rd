@@ -3,7 +3,8 @@
 \alias{icd9WarnStopMessage}
 \title{warn or stop with message based on switch}
 \usage{
-icd9WarnStopMessage(..., invalidAction = c("stop", "warn", "silent"))
+icd9WarnStopMessage(..., invalidAction = c("stop", "warn", "silent",
+  "ignore"))
 }
 \arguments{
 \item{...}{message components passed on to \code{warning} or \code{stop}}
@@ -11,7 +12,8 @@ icd9WarnStopMessage(..., invalidAction = c("stop", "warn", "silent"))
 \item{invalid}{}
 }
 \description{
-warn or stop with message based on switch
+Note that the default action is "stop," not "warn" here.
+  "ignore" and "silent" are synonymous.
 }
 \keyword{internal}
 
