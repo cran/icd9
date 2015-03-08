@@ -15,17 +15,18 @@ icd9CondenseToMajor(icd9, isShort = icd9GuessIsShort(icd9), onlyReal = NULL)
 
 icd9CondenseToMajorDecimal(icd9Decimal, onlyReal = NULL)
 
-icd9CondenseToMajorShort(icd9Short, onlyReal = NULL)
+icd9CondenseToMajorShort(icd9Short, onlyReal = NULL, warnReal = FALSE)
 
 icd9CondenseShort(icd9Short, onlyReal = NULL, toMajor = TRUE)
 
 icd9CondenseDecimal(icd9Decimal, onlyReal = NULL, toMajor = TRUE)
 }
 \arguments{
-\item{icd9}{is a character vector of ICD-9 codes. If fewer than five characters is
-given in a code, then the digits are greedily assigned to hundreds, then
+\item{icd9}{is
+a character vector or factor of ICD-9 codes. If fewer than five characters
+is given in a code, then the digits are greedily assigned to hundreds, then
 tens, then units, before the decimal parts. E.g. "10" becomes "010", not
-"0010"}
+"0010".}
 
 \item{isShort}{single logical value which determines whether the ICD-9 code
 provided is in short (TRUE) or decimal (FALSE) form. Where reasonable, this
@@ -52,6 +53,10 @@ becomes "010", not "0010"}
 five characters is given in a code, then the digits are greedily assigned
 to hundreds, then tens, then units, before the decimal parts. E.g. "10"
 becomes "010", not "0010"}
+
+\item{warnReal}{single logical value, if \code{TRUE}, give warnings when
+there is discrepancy between \code{onlyReal} being \code{TRUE} yet data
+containing undefined codes.}
 }
 \description{
 This can be thought of as the inverse operation to

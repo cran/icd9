@@ -37,10 +37,7 @@ icd9ComorbidAhrq(patientData)[, 1:8]
 icd9ComorbidQuanDeyo(patientData)[, 1:8]
 
 ## ----getcomorbidities2---------------------------------------------------
-patientData %>%
-  icd9FilterPoaYes() %>%
-  icd9ComorbidAhrq() %>%
-  extract(1:8)
+patientData %>% icd9FilterPoaYes %>% icd9ComorbidAhrq %>% extract(1:8)
 
 ## ----"conversionSimple"--------------------------------------------------
 icd9DecimalToShort(c("1", "10.20", "100", "123.45"))
@@ -57,7 +54,7 @@ icd9IsValidDecimal(c("099.17", "-1.1"))
 icd9IsValidShort(c("1", "001", "100", "123456", "003.21"))
 
 ## ----invalidint, eval = FALSE--------------------------------------------
-#  icd9IsValidShort(100) # gives a warning
+#  #icd9IsValidShort(100) # gives an error
 
 ## ----ranges--------------------------------------------------------------
 # get all possible codes
@@ -73,8 +70,8 @@ icd9IsValidShort(c("1", "001", "100", "123456", "003.21"))
 # "V10" %i9s% "E800" # throws an error
 
 ## ----rangeanomaly--------------------------------------------------------
-icd9ExpandRangeShort("V100", "V1002", onlyReal = TRUE) # default
-icd9ExpandRangeShort("V100", "V1002", onlyReal = FALSE) # V10.0 is not a leaf node
+icd9ExpandRangeShort("V100", "V1002", onlyReal = TRUE) # default, equivalent to %i9s%
+icd9ExpandRangeShort("V100", "V1002", onlyReal = FALSE) # V10.0 is not a leaf node, equivalent to %i9sa%
 
 ## ----"childrenReal"------------------------------------------------------
 icd9Children("391")
@@ -146,7 +143,7 @@ names(quanElixComorbid)
 patientData %>%
   icd9FilterPoaNotNo %>%
   icd9ComorbidAhrq %>%
-  extract(1:9) # chop off at nine for clarity
+  extract(1:9)
 
 ## ----elixvsquanelix------------------------------------------------------
 difference <- icd9DiffComorbid(elixComorbid, quanElixComorbid, 
@@ -173,7 +170,7 @@ many_patients <- icd9:::randomPatients(100000)
 
 system.time(
   icd9ComorbidAhrq(many_patients)
-  )[["elapsed"]] # 2.5 seconds on my machine
+  )[["elapsed"]] # result in seconds
 
 ## ----"arbitraryMapping"--------------------------------------------------
 names(icd9Chapters)[c(1:5, 14)]

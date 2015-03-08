@@ -4,28 +4,35 @@
 \alias{icd9LongToWide}
 \title{convert ICD data from long to wide format}
 \usage{
-icd9LongToWide(x, visitId = NULL, icdId = NULL, prefix = "icd_",
-  empty = NA, width = NULL)
+icd9LongToWide(icd9df, visitId = "visitId", icd9Field = "icd9",
+  prefix = "icd_", min.width = 0, aggregate = TRUE, return.df = FALSE)
 }
 \arguments{
-\item{x}{data.frame of long-form data, one column for visitId and one for ICD
-code}
+\item{icd9df}{data.frame of long-form data, one column for visitId and one
+for ICD code}
 
 \item{visitId}{single character, if NULL will use "visitId" if exists,
 otherwise the first column}
 
-\item{icdId}{single character string with name of column containing the ICD
-codes. If left as NULL, the field is guessed to be the first matching ICD
-or icd, and a warning is given if multiple columns match.}
+\item{icd9Field}{single character string with name of column containing the
+ICD codes. If left as NULL, the field is guessed to be the first matching
+ICD or icd, and a warning is given if multiple columns match.}
 
 \item{prefix}{character, default "icd_" to prefix new columns}
 
-\item{empty}{value to fill out empty fields of wide output data, defaults to
-\code{NA}}
+\item{min.width,}{single integer, if specified, writes out this many columns
+even if no patients have that many codes. Must be greater than or equal to
+the maximum number of codes per patient.}
 
-\item{width,}{single integer, if specified, writes out this many columns even
-if no patients have that many codes. Must be greater than or equal to the
-maximum number of codes per patient.}
+\item{aggregate}{single logical value, if TRUE (the default) will take more
+time to find out-of-order visitIds, and combine all the codes for each
+unique visitId. If \code{FALSE}, then out-of-order visitIds will result in
+a row in the output data per contiguous block of identical visitIds.}
+
+\item{return.df}{single logical value, if \code{TRUE}, return a data frame
+with a field for the visitId. This may be more convenient, but the default
+of \code{FALSE} gives the more natural return data of a matrix with
+rownames being the visitIds.}
 }
 \description{
 This is more complicated than reshape or reshape2::dcast allows.
@@ -35,7 +42,7 @@ This is more complicated than reshape or reshape2::dcast allows.
 longdf <- data.frame(visitId = c("a", "b", "b", "c"),
     icd9 = c("441", "4424", "443", "441"))
   icd9LongToWide(longdf)
-  icd9LongToWide(longdf, prefix = "ICD10_", empty = "")
+  icd9LongToWide(longdf, prefix = "ICD10_")
 }
 \seealso{
 Other ICD-9 convert: \code{\link{convert}},
@@ -57,4 +64,5 @@ Other ICD-9 convert: \code{\link{convert}},
   \code{\link{icd9DropLeadingZeroesShort}};
   \code{\link{icd9WideToLong}}
 }
+\keyword{manip}
 

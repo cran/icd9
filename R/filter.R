@@ -6,7 +6,11 @@
 #' @param invert single logical value, if TRUE will return invalid instead of valid rows.
 #' @export
 icd9FilterValid <- function(icd9df, icd9Field = "icd9",
-                                       isShort = icd9GuessIsShort(icd9df[[icd9Field]]), invert = FALSE) {
+                            isShort = icd9GuessIsShort(icd9df[[icd9Field]]), invert = FALSE) {
+  checkmate::assertDataFrame(icd9df, min.cols = 1, col.names = "named")
+  checkmate::assertString(icd9Field)
+  checkmate::assertFlag(isShort)
+  checkmate::assertFlag(invert)
   v <- icd9IsValid(icd9 = icd9df[[icd9Field]], isShort = isShort) != invert
   icd9df[v, ]
 }
@@ -19,7 +23,7 @@ icd9FilterValid <- function(icd9df, icd9Field = "icd9",
 #' @param invert single logical value, if TRUE will return valid instead of invalid rows.
 #' @export
 icd9FilterInvalid <- function(icd9df, icd9Field = "icd9",
-                                       isShort = icd9GuessIsShort(icd9df[[icd9Field]]), invert = FALSE)
+                              isShort = icd9GuessIsShort(icd9df[[icd9Field]]), invert = FALSE)
   icd9FilterValid(icd9df, icd9Field, isShort, invert = !invert)
 
 
@@ -57,16 +61,21 @@ icd9FilterInvalid <- function(icd9df, icd9Field = "icd9",
 #' @export
 icd9FilterPoa <- function(icd9df, poaField = "poa", poa = icd9PoaChoices) {
   poa <- match.arg(poa)
-  stopifnot(is.data.frame(icd9df))
-  stopifnot(is.character(poaField), length(poaField) == 1)
+  checkmate::assertDataFrame(icd9df, min.cols = 1, col.names = "named")
+  checkmate::assertString(poaField, na.ok = FALSE)
   stopifnot(poaField %in% names(icd9df))
   if (poa == "yes") return(icd9FilterPoaYes(icd9df, poaField = poaField))
   if (poa == "no") return(icd9FilterPoaNo(icd9df, poaField = poaField))
   if (poa == "notYes") return(icd9FilterPoaNotYes(icd9df, poaField = poaField))
-  if (poa == "notNo") return(icd9FilterPoaNotNo(icd9df, poaField = poaField))
+  #if (poa == "notNo")
+  icd9FilterPoaNotNo(icd9df, poaField = poaField)
 }
 
 .icd9FilterPoa <- function(icd9df, poaField, choice, negative = FALSE) {
+  checkmate::assertDataFrame(icd9df, min.cols = 1, col.names = "named")
+  checkmate::assertString(poaField, na.ok = FALSE)
+  checkmate::assertCharacter(choice, min.chars = 1, min.len = 1, any.missing = FALSE)
+  checkmate::assertFlag(negative)
   stopifnot(poaField %in% names(icd9df))
   p <- icd9df[[poaField]]
   if (negative)

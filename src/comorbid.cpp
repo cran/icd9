@@ -1,126 +1,125 @@
 // [[Rcpp::interfaces(r, cpp)]]
+// [[Rcpp::plugins(openmp)]]
+
 #include <Rcpp.h>
+#include <local.h>
+#include <vector>
 #include <string>
+
 using namespace Rcpp;
 
-//#define DEBUG = 1
-
-typedef std::vector<std::string > VecStr;
-typedef VecStr::iterator VecStrIt;
-typedef std::set<std::string > SetStr;
-typedef std::map<int,std::string > MapStr;
-typedef std::vector<SetStr > CmbMap;
-typedef std::multimap<std::string, std::string> Tmm;
-// internal function definitions
-int printVecStr(VecStr sv);
-int printCharVec(CharacterVector cv);
+// R CMD INSTALL --no-docs icd9 && R -e "library(icd9); icd9:::runOpenMPVecInt();"
 
 //' @rdname icd9Comorbid
-//' @export
+//' @description RcppParallel approach with openmp and vector of integer strategy
+//' @param aggregate single logical value, if /code{TRUE}, then take (possible much) more time to aggregate out-of-sequence visit IDs in the icd9df data.frame. If this is \code{FALSE}, then each contiguous group of visit IDs will result in a row of comorbidities in the output data. If you know your visitIds are possible disordered, then use \code{TRUE}.
+//' @keywords internal
 // [[Rcpp::export]]
-List icd9ComorbidShort(
-  DataFrame icd9df,
-  List icd9Mapping,
-  std::string visitId = "visitId", // or CharacterVector?
-  std::string icd9Field = "icd9"
-  ) {
-    List out;
-    VecStr vs = as<VecStr>(as<CharacterVector>(icd9df[visitId]));
-    VecStr icds = as<VecStr>(as<CharacterVector>(icd9df[icd9Field]));
+SEXP icd9ComorbidShortCpp(const SEXP& icd9df, const List& icd9Mapping,
+		const std::string visitId = "visitId", const std::string icd9Field =
+				"icd9", const int threads = 8, const int chunkSize = 256,
+		const int ompChunkSize = 1, bool aggregate = true) {
+#ifdef ICD9_VALGRIND
+	CALLGRIND_START_INSTRUMENTATION;
+#endif
+#if (defined ICD9_DEBUG_SETUP || defined ICD9_SETUP)
+	Rcpp::Rcout << "icd9ComorbidShortOpenMPVecInt\n";
+	Rcpp::Rcout << "chunk size = " << chunkSize << "\n";
+#endif
 
-    CharacterVector mapnames = icd9Mapping.names();
+#ifdef ICD9_DEBUG_PARALLEL
+	Rcpp::Rcout << "checking _OPENMP... ";
+#ifdef _OPENMP
+	Rcpp::Rcout << "_OPENMP is defined.\n";
+#else
+	Rcpp::Rcout << "_OPENMP is not defined.\n";
+#endif
+#endif
 
-    // create a multimap of visitid-code pairs
-    Tmm vcdb;
-    //loop through visit and icd codes and put together
-    VecStrIt j = icds.begin();
-    for (VecStrIt i = vs.begin(); i != vs.end(); ++i, ++j) {
-      vcdb.insert(std::pair<std::string, std::string>(*i, *j));
-    }
-    #ifdef ICD9_DEBUG
-    std::cout << "multimap created\n";
-    #endif
+#ifdef _OPENMP
+	if (threads > 0)
+	omp_set_num_threads(threads);
+#ifdef ICD9_DEBUG_PARALLEL
+	Rcpp::Rcout << "Max Number of available threads=" << omp_get_max_threads() << "\n";
+#endif
+#endif
 
-    //get unique visitIds so we can name and size the output
-    SetStr uvis;
-    for( Tmm::iterator it = vcdb.begin(); it != vcdb.end(); it = vcdb.upper_bound(it->first)) {
-      uvis.insert(it->first);
-    }
-    int usize = uvis.size();
-    #ifdef ICD9_DEBUG
-    std::cout << "got the following unique visitIds: ";
-    //printVecStr(uvis);
-    #endif
+	VecStr out_row_names; // TODO: Reserve size
+#ifdef ICD9_DEBUG_SETUP
+	Rcpp::Rcout << "building visit:codes structure\n";
+#endif
 
-    // convert mapping from List of CharacterVectors to std vector of sets. This
-    // is a small one-off cost, and dramatically improves the performance of the
-    // later loops, because we can .find() instead of linear search.
-    CmbMap map;
-    for (List::iterator mi = icd9Mapping.begin(); mi != icd9Mapping.end(); ++mi) {
-      VecStr mvs(as<VecStr>(*mi));
-      SetStr ss(mvs.begin(), mvs.end());
-      map.push_back(ss);
-    }
-    #ifdef ICD9_DEBUG
-    std::cout << "reference mapping std structure created\n";
-    #endif
+	VecVecInt vcdb; //size is reserved later
+	// TODO: do I need to allocate memory when I do this?
+	const SEXP vsexp = PROTECT(getRListOrDfElement(icd9df, visitId.c_str()));
+#ifdef ICD9_DEBUG_SETUP
+	Rcpp::Rcout << "type of vsexp = " << TYPEOF(vsexp) << "\n";
+#endif
+	if (TYPEOF(vsexp) != STRSXP)
+		Rf_error("expecting vsexp to be character vector");
+	UNPROTECT(1); // vsexp not used further
 
-    int nref = map.size(); // the number of comorbidity groups
-    out = List::create(); // start building data.frame output as list.
-    out[visitId] = uvis;
+#ifdef ICD9_DEBUG_SETUP
+	Rcpp::Rcout << "icd9ComorbidShortMatrix STRSXP\n";
+#endif
+	buildVisitCodesVec(icd9df, visitId, icd9Field, vcdb, out_row_names,
+			aggregate);
 
-    // initialize with empty logical vectors
-    for (int cmb = 0; cmb < nref; ++cmb) {
-      LogicalVector cmbcol(usize, false); // inital vector of falses
-      String cmbnm = mapnames[cmb];
-      out[cmbnm] = cmbcol; // does data copy
-    }
+#ifdef ICD9_DEBUG_SETUP
+	Rcpp::Rcout << "building icd9Mapping\n";
+#endif
+	VecVecInt map;
+	buildMap(icd9Mapping, map);
 
-    // use std::multimap to get subset of icd codes for each visitId key
-    //TODO: upper_bound jumps index irregularly
-    for( Tmm::iterator it = vcdb.begin(); it != vcdb.end(); it = vcdb.upper_bound(it->first)) {
+#ifdef ICD9_DEBUG_SETUP
+	Rcpp::Rcout << "first cmb has len: " << map[0].size() << "\n";
+#endif
 
-      // find the icd9 codes for a given visitId
-      std::pair <Tmm::iterator, Tmm::iterator> matchrange;
-      std::string key = it->first;
-      matchrange = vcdb.equal_range(key);
+	const VecVecIntSz num_comorbid = map.size();
+	const VecVecIntSz num_visits = vcdb.size();
 
-      // get distance to the unique key, not the position of the key in the multimap
-      //int urow = distance(vcdb.begin(), it);
-      int urow = distance(uvis.begin(), std::find(uvis.begin(), uvis.end(), key)); //TODO make uvis a std::set to speed this up.
+#ifdef ICD9_DEBUG_SETUP
+	Rcpp::Rcout << num_visits << " visits\n";
+	Rcpp::Rcout << num_comorbid << " is num_comorbid\n";
+#endif
 
-      // loop through comorbidities
-      for (int cmb = 0; cmb < nref; ++cmb) {
-        // loop through icd codes for this visitId
-        for (Tmm::iterator j = matchrange.first; j != matchrange.second; ++j) {
-          if (map[cmb].find(j->second) != map[cmb].end()) {
-            LogicalVector cmbcol = out[cmb+1]; // does this copy?
-            cmbcol[urow] = true;
-          }
-        }
-      }
-    }
-    mapnames.push_front("visitId");
-    out.names() = mapnames;
-    IntegerVector row_names = seq_len(usize);
-    out.attr("row.names") = row_names;
-    out.attr("class") = "data.frame";
-    return out;
-  }
+	const ComorbidOut out = lookupComorbidByChunkFor(vcdb, map, chunkSize,
+			ompChunkSize);
 
 #ifdef ICD9_DEBUG
-  int printVecStr(VecStr sv) {
-    for (VecStr::iterator i = sv.begin(); i != sv.end(); ++i) {
-      std::cout << *i << "\n";
-    }
-    return 0;
-  }
-
-  int printCharVec(CharacterVector cv) {
-    for (CharacterVector::iterator i = cv.begin(); i != cv.end(); ++i) {
-      String s = *i;
-      std::cout << s.get_cstring() << "\n";
-    }
-    return 0;
-  }
+	Rcpp::Rcout << "out length is " << out.size() << "\n";
+	int outsum = std::accumulate(out.begin(), out.end(), 0);
+	Rcpp::Rcout << "out sum is " << outsum << "\n";
+	Rcpp::Rcout << "Ready to convert to R Matrix\n";
 #endif
+#ifdef ICD9_DEBUG_TRACE
+	Rcpp::Rcout << "out is: ";
+	printIt(out);
+	Rcpp::Rcout << "printed\n";
+#endif
+	//IntegerVector mat_out = wrap(out); // matrix is just a vector with dimensions (and col major...) // please don't copy data!
+	// TODO: the above line segfaults consistently with some input, e.g. 2e6 rows on linux. Need to manually convert int to logical?
+
+	// try cast to logical first. (in which case I can use char for Out)
+	std::vector<bool> intermed;
+	intermed.assign(out.begin(), out.end());
+#ifdef ICD9_DEBUG
+	Rcpp::Rcout << "static_cast to vec bool completed\n";
+#endif
+	LogicalVector mat_out = wrap(intermed); // matrix is just a vector with dimensions (and col major...) // please don't copy data!
+#ifdef ICD9_DEBUG
+			Rcpp::Rcout << "wrapped out\n";
+#endif
+	mat_out.attr("dim") = Dimension((int) num_comorbid, (int) num_visits); // set dimensions in reverse (row major for parallel step)
+	mat_out.attr("dimnames") = List::create(icd9Mapping.names(), out_row_names);
+	//mat_out.attr("class") = "matrix";
+	Function t("t"); // use R transpose - seems pretty fast
+#ifdef ICD9_DEBUG
+			Rcpp::Rcout << "Ready to transpose and return\n";
+#endif
+#ifdef ICD9_VALGRIND
+	CALLGRIND_STOP_INSTRUMENTATION;
+	//CALLGRIND_DUMP_STATS;
+#endif
+	return t(mat_out);
+}

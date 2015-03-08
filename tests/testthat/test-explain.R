@@ -19,6 +19,17 @@ test_that("explain a large set of ICD-9 codes succinctly", {
 
 })
 
+test_that("github issue #41", {
+  expect_equal(
+    icd9Explain(icd9GetReal(quanDeyoComorbid[["Dementia"]]), doCondense = TRUE),
+    icd9Explain(quanDeyoComorbid[["Dementia"]], doCondense = TRUE, warn = FALSE)
+  )
+  expect_equal(
+    icd9Explain(icd9GetReal(quanDeyoComorbid[["Dementia"]]), doCondense = FALSE),
+    icd9Explain(quanDeyoComorbid[["Dementia"]], doCondense = FALSE)
+  )
+})
+
 test_that("explain S3 dispatch", {
   expect_equal(icd9Explain("003.21", isShort = FALSE),
                "Salmonella meningitis")
@@ -76,6 +87,9 @@ test_that("none ICD-9 codes are even valid", {
 
 test_that("guess icd9 types: short", {
   expect_true(icd9GuessIsShort("12345"))
+  expect_true(icd9GuessIsShort(c("12345", "234")))
+  # we only look at first one...
+  expect_true(icd9GuessIsShort(c("12345", "23.4")))
   expect_true(icd9GuessIsShort("1234"))
 })
 
@@ -95,8 +109,8 @@ test_that("guess icd9 types: invalid", {
 })
 
 test_that("guess with just majors", {
-# it acutally doesn't matter if they are all majors, so we default to 'short'
-# which is usually the most direct route to an answer
+  # it acutally doesn't matter if they are all majors, so we default to 'short'
+  # which is usually the most direct route to an answer
   expect_true(icd9GuessIsShort(c("100", "101", "102")))
 })
 
@@ -191,8 +205,8 @@ for (i in list("icd9Chapters", "icd9ChaptersSub", "icd9ChaptersMajor")) {
     # or duplicate codes
     expect_equal(length(il), length(unique(il)))
     expect_true(all(nchar(names(il) > 0)))
-    expect_false(any(is.na(il)))
-    expect_false(any(is.na(names(il))))
+    expect_false(anyNA(il))
+    expect_false(anyNA(names(il)))
   })
 }
 
@@ -282,9 +296,11 @@ test_that("condense full ranges", {
   expect_equal(icd9CondenseShort(almostall003, onlyReal = FALSE, toMajor = TRUE), "003")
 
   # tomajor = false
-  expect_equal(icd9CondenseShort(icd9ChildrenShort("0031", onlyReal = FALSE), onlyReal = FALSE, toMajor = FALSE), "0031")
+  expect_equal(icd9CondenseShort(icd9ChildrenShort("0031", onlyReal = FALSE),
+                                 onlyReal = FALSE, toMajor = FALSE), "0031")
   # major is allowed
-  expect_that(res <- icd9CondenseShort(c("003", othersalmonella), onlyReal = TRUE, toMajor = FALSE),
+  expect_that(res <- icd9CondenseShort(c("003", othersalmonella),
+                                       onlyReal = TRUE, toMajor = FALSE),
               gives_warning())
   expect_equal(res, character())
   # major is returned
@@ -331,15 +347,19 @@ test_that("condense short range", {
 
   expect_equal(icd9CondenseShort(icd9ChildrenShort("00320", onlyReal = TRUE), onlyReal = TRUE), "00320")
   # if we ask for real codes, we should expect all real codes as input:
-  expect_that(icd9CondenseShort(c("0032", icd9ChildrenShort("0032", onlyReal = TRUE)), onlyReal = TRUE), gives_warning())
+  expect_that(icd9CondenseShort(c("0032", icd9ChildrenShort("0032", onlyReal = TRUE)), onlyReal = TRUE),
+              gives_warning())
   # but majors should be okay, even if not 'real'
-  expect_that(icd9CondenseShort(c("003", icd9ChildrenShort("003", onlyReal = TRUE))), testthat::not(gives_warning()))
+  expect_that(icd9CondenseShort(c("003", icd9ChildrenShort("003", onlyReal = TRUE))),
+              testthat::not(gives_warning()))
   # unless we excluded majors:
   expect_that(icd9CondenseShort(c("003", icd9ChildrenShort("003", onlyReal = TRUE)), toMajor = FALSE), shows_message())
 
 })
 
-test_that("explain icd9GetChapters bad input", {})
+test_that("explain icd9GetChapters bad input", {
+  skip("todo")
+})
 
 test_that("explain icd9GetChapters simple input", {
   chaps1 <- icd9GetChapters(c("410", "411", "412"), isShort = TRUE)
@@ -384,4 +404,14 @@ test_that("explain icd9GetChapters simple input", {
 test_that("working with named lists of codes, decimal is guessed", {
   expect_that(icd9ExplainDecimal(list(a = c("001"), b = c("001.1", "001.9"))), testthat::not(gives_warning()))
   expect_that(icd9Explain(list(a = c("001"), b = c("001.1", "001.9"))), testthat::not(gives_warning()))
+})
+
+test_that("icd9 descriptions is parsed correctly", {
+  x <- parseIcd9Descriptions()
+  expect_equal(names(x), c("icd9", "descLong", "descShort"))
+  expect_equal(nrow(x), 14567)
+  expect_true(is.character(x$icd9))
+  # TODO: add specific tests, e.g. for Menieres with non-standard character
+  # sets, punctuation
+  # most of the results of this are already tested in icd9Hierarchy
 })

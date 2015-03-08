@@ -10,6 +10,7 @@
 #' @keywords manip
 #' @export
 icd9Sort <- function(icd9, isShort = icd9GuessIsShort(icd9)) {
+  checkmate::assertFlag(isShort)
   # TODO: need to be able to compare a pair of codes quickly, then use built-in
   # sort. This becomes easier when I move to S3 classes for ICD-9.
   if (isShort) return(icd9SortShort(icd9))
@@ -18,13 +19,17 @@ icd9Sort <- function(icd9, isShort = icd9GuessIsShort(icd9)) {
 
 #' @rdname icd9Sort
 #' @export
-icd9SortShort <- function(icd9Short)
+icd9SortShort <- function(icd9Short) {
+  assertFactorOrCharacter(icd9Short)
   icd9Short[order(icd9AddLeadingZeroesShort(icd9Short))]
+}
 
 #' @rdname icd9Sort
 #' @export
-icd9SortDecimal <- function(icd9Decimal)
+icd9SortDecimal <- function(icd9Decimal) {
+  assertFactorOrCharacter(icd9Decimal)
   icd9Decimal[order(icd9DecimalToShort(icd9Decimal))]
+}
 
 #' @title take two ICD-9 codes and expand range to include all child codes
 #' @description this is cumbersome code, covering a whole load of edge cases
@@ -55,16 +60,21 @@ icd9SortDecimal <- function(icd9Decimal)
 #' @family ICD-9 ranges
 #' @export
 icd9ExpandRange <- function(start, end, isShort, onlyReal = TRUE) {
+  checkmate::assertScalar(start) # i'll permit numeric but prefer char
+  checkmate::assertScalar(end)
+  checkmate::assertFlag(isShort)
+  checkmate::assertFlag(onlyReal)
   if (isShort) return(icd9ExpandRangeShort(start, end, onlyReal))
-  return(icd9ExpandRangeDecimal(start, end, onlyReal))
+  icd9ExpandRangeDecimal(start, end, onlyReal)
 }
 
 #' @rdname icd9ExpandRange
 #' @export
 icd9ExpandRangeShort <- function(start, end,
                                  onlyReal = TRUE) {
-  checkmate::checkVector(start, len = 1) # i'll permit numeric but prefer char
-  checkmate::checkVector(end, len = 1)
+  checkmate::assertScalar(start) # i'll permit numeric but prefer char
+  checkmate::assertScalar(end)
+  checkmate::assertFlag(onlyReal)
   start <- icd9AddLeadingZeroesShort(trim(start))
   end <- icd9AddLeadingZeroesShort(trim(end))
 
@@ -85,17 +95,17 @@ icd9ExpandRangeShort <- function(start, end,
     if (ei < si) stop("end code must be greater than or equal to start code")
     if (nchar(e) != 5) {
       # calculate the number of codes to span, start with lookup table of nchar of each
-      nlk = nchar(lookup[seq(from = ei + 1, to = ei + 111)])
-      lene = nchar(e)
+      nlk <- nchar(lookup[seq(from = ei + 1, to = ei + 111)])
+      lene <- nchar(e)
       # lookup the next code with the same hierarchical level
       mlen <- match(lene, nlk)
       # if the next code can't be found, e.g. after 999, just pick a big number.
-      if (is.na(mlen)) mlen = 111
+      if (is.na(mlen)) mlen <- 111
       ei <- ei + mlen
       ei <- ei - (lene - 2)
-      if (icd9IsASingleE(e))
+      if (icd9IsE(e))
         ei <- ei + 1
-      else if (icd9IsASingleV(e) && lene < nchar(s) && substr(e, lene, lene) != "9")
+      else if (icd9IsV(e) && lene < nchar(s) && substr(e, lene, lene) != "9")
         ei <- ei + 1
     }
     # except if 'end' is 4 char and ends in 9, because we don't want to catch
@@ -130,7 +140,9 @@ icd9ExpandRangeShort <- function(start, end,
 #' @rdname icd9ExpandRange
 #' @export
 icd9ExpandRangeMajor <- function(start, end, onlyReal = TRUE) {
-  stopifnot(length(start) == 1 && length(end) == 1)
+  checkmate::assertScalar(start) # i'll permit numeric but prefer char
+  checkmate::assertScalar(end)
+  checkmate::assertFlag(onlyReal)
   c <- icd9ExtractAlphaNumeric(start)
   d <- icd9ExtractAlphaNumeric(end)
   # cannot range between numeric, V and E codes, so ensure same type.
@@ -148,7 +160,7 @@ icd9ExpandRangeDecimal <- function(start, end, onlyReal = TRUE) {
     icd9ExpandRangeShort(
       icd9DecimalToShort(start), icd9DecimalToShort(end),
       onlyReal = onlyReal
-    )
+    ) # although still considering allowing numeric
   )
 }
 
@@ -182,6 +194,46 @@ icd9ExpandRangeDecimal <- function(start, end, onlyReal = TRUE) {
   icd9ExpandRangeShort(start, end, onlyReal = TRUE)
 }
 
+# icd9Children separate from C++ docs so that I can guess isShort
+#' @name icd9Children
+#' @title Expand ICD-9 codes to all possible sub-codes
+#' @template icd9-any
+#' @template icd9-short
+#' @template icd9-decimal
+#' @template isShort
+#' @template onlyReal
+#' @keywords manip
+#' @family ICD-9 ranges
+#' @examples
+#' library(magrittr)
+#' icd9ChildrenShort("10201", FALSE) # no children other than self
+#' icd9Children("0032", FALSE) # guess it was a short, not decimal code
+#' icd9ChildrenShort("10201", TRUE) # empty because 102.01 is not meaningful
+#' icd9ChildrenShort("003", TRUE) %>% icd9ExplainShort(doCondense = FALSE)
+#' icd9ChildrenDecimal("100.0")
+#' icd9ChildrenDecimal("100.00")
+#' icd9ChildrenDecimal("2.34")
+#' @export
+icd9Children <- function(icd9, isShort = icd9GuessIsShort(icd9), onlyReal = TRUE) {
+  assertFactorOrCharacter(icd9)
+  checkmate::assertFlag(isShort)
+  checkmate::assertFlag(onlyReal)
+  .Call("icd9_icd9ChildrenCpp", PACKAGE = "icd9", icd9, isShort, onlyReal)
+}
+
+#' @rdname icd9Children
+#' @name icd9Children
+#' @export
+icd9ChildrenShort <- function(icd9Short, onlyReal = TRUE) {
+  .Call("icd9_icd9ChildrenShortCpp", PACKAGE = "icd9", icd9Short, onlyReal)
+}
+
+#' @rdname icd9Children
+#' @export
+icd9ChildrenDecimal <- function(icd9Decimal, onlyReal = TRUE) {
+  .Call("icd9_icd9ChildrenDecimalCpp", PACKAGE = "icd9", icd9Decimal, onlyReal)
+}
+
 #' Generate sysdata.rda
 #'
 #' Generate correctly ordered look-up tables of numeric-only, V and E codes. This is
@@ -198,9 +250,18 @@ icd9GenerateSysData <- function(sysdata.path = file.path("R", "sysdata.rda"), do
 
   # we can either use the icd9IsReal functions on these lists, or just grep the
   # canonical list directly to get the numeric, V and E codes.
-  icd9NShortReal <- grep("[^VE]*", icd9::icd9Hierarchy$icd9, value = TRUE)
-  icd9VShortReal <- grep("V", icd9::icd9Hierarchy$icd9, value = TRUE)
-  icd9EShortReal <- grep("E", icd9::icd9Hierarchy$icd9, value = TRUE)
+  icd9NShortReal <- grep("^[^VE]+", icd9::icd9Hierarchy$icd9, value = TRUE) # nolint
+  icd9VShortReal <- grep("V", icd9::icd9Hierarchy$icd9, value = TRUE) # nolint
+  icd9EShortReal <- grep("E", icd9::icd9Hierarchy$icd9, value = TRUE) # nolint
+
+  # some very quick sanity checks: (duplicate in a test in test-ranges)
+  stopifnot(length(icd9NShortReal) < length(icd9NShort))
+  stopifnot(length(icd9VShortReal) < length(icd9VShort))
+  stopifnot(length(icd9EShortReal) < length(icd9EShort))
+  stopifnot(all(icd9NShortReal %in% icd9NShort))
+  stopifnot(all(icd9VShortReal %in% icd9VShort))
+  stopifnot(all(icd9EShortReal %in% icd9EShort))
+
   # we assume we are in the root of the package directory. Save to sysdata.rda
   # because these are probably not of interest to a user and would clutter an
   # already busy namespace.

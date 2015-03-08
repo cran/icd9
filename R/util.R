@@ -2,13 +2,13 @@
 # assume length is one for strim
 strim <- function(x) {
   if (!is.na(x[1]))
-    return(.Call('icd9_strim_cpp', PACKAGE = 'icd9', as.character(x)))
+    return(.Call("icd9_strimCpp", PACKAGE = "icd9", as.character(x)))
   return(NA_character_)
 }
 
 trim <- function (x) {
-  nax = is.na(x)
-  x[!nax] <- .Call('icd9_trim_cpp', PACKAGE = 'icd9', as.character(x[!nax]))
+  nax <- is.na(x)
+  x[!nax] <- .Call("icd9_trimCpp", PACKAGE = "icd9", as.character(x[!nax]))
   x
 }
 
@@ -18,7 +18,7 @@ allIsNumeric <- function(x, extras = c(".", "NA", NA)) {
   old <- options(warn = - 1)
   on.exit(options(old))
   xs <- x[x %nin% c("", extras)]
-  !any(is.na(as.numeric(xs)))
+  !anyNA(as.numeric(xs))
 }
 
 asNumericNoWarn <- function(x) {
@@ -34,7 +34,7 @@ asIntegerNoWarn <- function(x)
 asCharacterNoWarn <- function(x) {
   old <- options(warn = - 1)
   on.exit(options(old))
-  if (is.factor(x)) x <- levels(x)[x]
+  if (is.factor(x)) return(levels(x)[x])
   as.character(x)
 }
 
@@ -62,7 +62,7 @@ saveInDataDir <- function(var, suffix = "") {
 #' @return data frame without logical fields
 #' @keywords internal manip
 logicalToBinary <- function(x) {
-  stopifnot(is.data.frame(x))
+  checkmate::assertDataFrame(x, min.rows = 1, min.cols = 1)
   if (any(dim(x) == 0))
     stop("got zero in at least one dimension in data frame. %d, %d",
          dim(x)[1], dim(x)[2])
@@ -123,14 +123,10 @@ strMultiMatch <- function(pattern, text, dropEmpty = FALSE, ...) {
 #'   not to swap, so the first match becomes the name.
 #' @keywords internal
 strPairMatch <- function(pattern, text, swap = FALSE, dropEmpty = FALSE, ...) {
-  stopifnot(length(pattern) == 1)
-  stopifnot(length(text) > 0)
-  stopifnot(length(swap) == 1)
-  stopifnot(length(dropEmpty) == 1)
-  stopifnot(is.character(pattern))
-  stopifnot(is.character(text))
-  stopifnot(is.logical(swap))
-  stopifnot(is.logical(dropEmpty))
+  checkmate::assertString(pattern)
+  checkmate::assertCharacter(text, min.len = 1)
+  checkmate::assertFlag(swap)
+  checkmate::assertFlag(dropEmpty)
 
   res <- strMultiMatch(pattern = pattern, text = text,
                        dropEmpty = dropEmpty, ...)
@@ -189,3 +185,16 @@ read.zip.url <- function(url, filename = NULL, FUN = readLines, ...) {
 }
 
 # EXCLUDE COVERAGE END
+
+getVisitId <- function(x, visitId = NULL) {
+  checkmate::checkDataFrame(x, min.cols = 1, col.names = "named")
+  if (is.null(visitId)) {
+    if (!any(names(x) == "visitId"))
+      visitId <- names(x)[1]
+    else
+      visitId <- "visitId"
+  }
+  checkmate::assertString(visitId)
+  stopifnot(visitId %in% names(x))
+  return(visitId)
+}

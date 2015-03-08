@@ -3,6 +3,7 @@
 \name{icd9Explain}
 \alias{icd9Explain}
 \alias{icd9Explain.character}
+\alias{icd9Explain.factor}
 \alias{icd9Explain.list}
 \alias{icd9Explain.numeric}
 \alias{icd9ExplainDecimal}
@@ -10,27 +11,32 @@
 \title{explain ICD9 codes}
 \usage{
 icd9Explain(icd9, isShort = icd9GuessIsShort(icd9), doCondense = TRUE,
-  brief = FALSE, warn = TRUE)
+  brief = FALSE, warn = TRUE, toMajor = TRUE)
 
-icd9ExplainShort(icd9Short, doCondense = TRUE, brief = FALSE, warn = TRUE)
+icd9ExplainShort(icd9Short, doCondense = TRUE, brief = FALSE, warn = TRUE,
+  toMajor = TRUE)
 
 icd9ExplainDecimal(icd9Decimal, doCondense = TRUE, brief = FALSE,
-  warn = TRUE)
+  warn = TRUE, toMajor = TRUE)
 
 \method{icd9Explain}{list}(icd9, isShort = icd9GuessIsShort(icd9),
-  doCondense = TRUE, brief = FALSE, warn = TRUE)
+  doCondense = TRUE, brief = FALSE, warn = TRUE, toMajor = TRUE)
+
+\method{icd9Explain}{factor}(icd9, isShort = icd9GuessIsShort(icd9),
+  doCondense = TRUE, brief = FALSE, warn = TRUE, toMajor = TRUE)
 
 \method{icd9Explain}{character}(icd9, isShort = icd9GuessIsShort(icd9),
-  doCondense = TRUE, brief = FALSE, warn = TRUE)
+  doCondense = TRUE, brief = FALSE, warn = TRUE, toMajor = TRUE)
 
 \method{icd9Explain}{numeric}(icd9, isShort = icd9GuessIsShort(icd9),
-  doCondense = TRUE, brief = FALSE, warn = FALSE)
+  doCondense = TRUE, brief = FALSE, warn = FALSE, toMajor = TRUE)
 }
 \arguments{
-\item{icd9}{is a character vector of ICD-9 codes. If fewer than five characters is
-given in a code, then the digits are greedily assigned to hundreds, then
+\item{icd9}{is
+a character vector or factor of ICD-9 codes. If fewer than five characters
+is given in a code, then the digits are greedily assigned to hundreds, then
 tens, then units, before the decimal parts. E.g. "10" becomes "010", not
-"0010"}
+"0010".}
 
 \item{isShort}{single logical value which determines whether the ICD-9 code
 provided is in short (TRUE) or decimal (FALSE) form. Where reasonable, this
@@ -40,7 +46,7 @@ is guessed from the input data.}
 the given set of ICD-9 codes by replacing subsets of codes with 'parent'
 codes which exactly encompass certain subsets. E.g. If all cholera
 diagnoses are provided, only '001 - Cholera' needs to be displayed, not all
-subtypes. This is currently partially implemented. See issue #3 in github.}
+subtypes.}
 
 \item{brief}{single logical value, default is \code{FALSE}. If \code{TRUE},
 the short description from the canonical CMS descriptions (included in
@@ -49,6 +55,11 @@ the short description from the canonical CMS descriptions (included in
 \item{warn}{single logical value, default is \code{TRUE}, meaning that codes
 which do not correspond to diagnoses, or to three-digit codes, will trigger
 a warning.}
+
+\item{toMajor}{Most major codes are not \emph{real}, e.g. Salmonella 003 is a
+major category, but is not itself used as a diagnostic code. Therefore,
+strictly, asking for only \emph{real} codes excludes the major. We'll turn
+a blind eye to this if we specifically request majors with toMajor.}
 
 \item{icd9Short}{is a character vector of ICD-9 codes. If fewer than
 five characters is given in a code, then the digits are greedily assigned
@@ -73,19 +84,18 @@ convert full format (123.45 style) ICD9 codes into the name and
 \itemize{
 \item \code{list}: explain all ICD-9 codes in a list of vectors
 
+\item \code{factor}: explain factor of ICD-9 codes
+
 \item \code{character}: explain character vector of ICD-9 codes
 
-\item \code{numeric}: explain numeric vector of ICD-9 codes, with warning
+\item \code{numeric}: explain numeric vector of ICD-9 codes, with warning.
+In general, this is not allowed because of the possible ambiguity of
+numeric decimal codes, but for convenience, this is allowed in this case to
+avoid typing many quotes.
 }}
-\note{
-TODO: it will be useful to have S3 ICD-9 short and long classes for
-  situations like this where we could easily dispatch on short or long type,
-  or even use a print.icd9decimal or print.icd9Short S3 method to display
-  ICD-9 codes.
-}
 \examples{
 icd9ExplainShort(ahrqComorbid[[1]][1:3])
-icd9ExplainShort(ahrqComorbid[[1]][1:3], brief = TRUE)
+icd9Explain(ahrqComorbid[[1]][1:3], brief = TRUE)
 }
 \references{
 \url{http://www.stata.com/help.cgi?icd9}

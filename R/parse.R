@@ -111,10 +111,12 @@ parseAhrqSas <- function(sasPath = system.file("extdata",
 
   # save the data in the development tree, so the package user doesn't need to
   # decode it themselves.
+  # EXCLUDE COVERAGE START
   if (save) {
     saveInDataDir("ahrqComorbidAll")
     saveInDataDir("ahrqComorbid")
   }
+  # EXCLUDE COVERAGE END
 
   if (returnAll) return(invisible(ahrqComorbidAll))
 
@@ -406,6 +408,10 @@ parseIcd9Descriptions <- function(icd9path =
   icd9ShortDesc <- lapply(r,
                           FUN = function(row)
                             trim(paste(row[-1], collapse = " ")))
+
+  # double check:
+  stopifnot(identical(icd9ShortCode, icd9LongCode))
+
   icd9CmDesc <- data.frame(
     icd9 = unlist(icd9LongCode),
     descLong = unlist(icd9LongDesc),
@@ -436,7 +442,7 @@ parseIcd9Chapters <- function(year = NULL,
     year <- "2014"
   else
     year <- as.character(year)
-  if (format(Sys.time(), "%Y") != year)
+  if (save && format(Sys.time(), "%Y") != year)
     warning(sprintf("Getting ICD-9 data for %s which is not the current year.
               Tests were written to validate extraction of 2014 data.", year))
 
@@ -448,7 +454,7 @@ parseIcd9Chapters <- function(year = NULL,
   icd9ChaptersMajor <- list()
   for (chap in names(icd9Chapters)) {
     if (chap == "Diseases Of The Blood And Blood-Forming Organs" ||
-          chap == "Congenital Anomalies") {
+        chap == "Congenital Anomalies") {
       # these have no subchapter, straight into the three-digit codes
       icd9ChaptersMajor <- c(icd9ChaptersMajor,
                              icd9WebParseGetList(year, memfun = memReadHtmlList,
@@ -473,12 +479,13 @@ parseIcd9Chapters <- function(year = NULL,
   # level: this would not enable matching an arbitrary code, but this is
   # probably a limited problem for the rare cases of obsolete codes, or new
   # codes, when the coding was done in a different year from this analysis.
-
+  # EXCLUDE COVERAGE START
   if (save) {
     saveInDataDir("icd9Chapters")
     saveInDataDir("icd9ChaptersSub")
     saveInDataDir("icd9ChaptersMajor")
   }
+  # EXCLUDE COVERAGE END
   invisible(list(icd9Chapters = icd9Chapters,
                  icd9ChaptersSub = icd9ChaptersSub,
                  icd9ChaptersMajor = icd9ChaptersMajor))

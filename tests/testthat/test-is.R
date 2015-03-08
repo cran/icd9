@@ -8,28 +8,22 @@ test_that("find codes", {
   expect_true(icd9IsV(" V10 "))
   expect_true(icd9IsE(" E800"))
   expect_true(icd9IsN(" 10.1"))
+  expect_true(icd9IsMajor(" 100"))
+  expect_true(icd9IsMajor(" E900"))
+  expect_false(icd9IsMajor(" V90.3 "))
+  expect_false(icd9IsMajor(" E900.3 "))
+  # todo, what about "E800." or "100." ?
+  expect_false(icd9IsV(" E900.3 "))
+  expect_false(icd9IsE(" 80.2"))
+  expect_false(icd9IsN(" V10.1"))
   expect_true(all(icd9IsV(vs)))
   expect_true(all(icd9IsE(es)))
   expect_true(all(icd9IsN(ns)))
 })
 
-test_that("slow versions for comparison", {
-  expect_equal(icd9IsV(vs), icd9IsV_cpp_slow(vs))
-  expect_equal(icd9IsV(vs), icd9IsV_cpp_slower(vs))
-  expect_equal(icd9IsV(es), icd9IsV_cpp_slow(es))
-  expect_equal(icd9IsV(es), icd9IsV_cpp_slower(es))
-
-  expect_equal(icd9IsE(es), icd9IsE_cpp_slow(es))
-  expect_equal(icd9IsE(ns), icd9IsE_cpp_slow(ns))
-
-  expect_equal(icd9IsN(ns), !icd9IsVE_cpp_slow(ns))
-  expect_equal(icd9IsN(vs), !icd9IsVE_cpp_slow(vs))
-})
-
-test_that("slow and maybe obsolete", {
+test_that("v, e", {
+  skip("should be tested by vectorized versions")
   expect_true(all(icd9IsVE(c(vs, es))))
-  expect_equal(icd9IsVE(c(vs, es)), icd9IsVE_R(c(vs, es)))
-  expect_equal(icd9IsVE(c(vs, es)), icd9IsVE_cpp_slow(c(vs, es)))
 
   expect_error(icd9IsASingleVE(c("V12", "E800")))
   expect_true(icd9IsASingleVE(" V12"))

@@ -4,7 +4,7 @@
 \alias{icd9Count}
 \alias{icd9CountComorbidBin}
 \alias{icd9CountWide}
-\title{count icd9 codes or comorbidities for each patient}
+\title{count ICD codes or comorbidities for each patient}
 \usage{
 icd9Count(x, visitId = NULL, return.df = FALSE)
 
@@ -53,7 +53,7 @@ vector of the count of comorbidities for each patient. This is
   duplicated.
 
 For \code{icd9Count}, it is assumed that all the columns apart
-  from \code{vistiId} represent actual or possible ICD-9 codes. Duplicate
+  from \code{visitId} represent actual or possible ICD-9 codes. Duplicate
   \code{visitId}s are repeated as given and aggregated.
 }
 \details{
@@ -65,7 +65,7 @@ mydf <- data.frame(visitId = c("r", "r", "s"),
   icd9Count(mydf, return.df = TRUE)
   icd9Count(mydf)
 
-  cmb <- icd9ComorbidQuanDeyo(mydf, isShort = FALSE)
+  cmb <- icd9ComorbidQuanDeyo(mydf, isShort = FALSE, return.df = TRUE)
   icd9CountComorbidBin(cmb)
 
   wide <- data.frame(visitId = c("r", "s", "t"),

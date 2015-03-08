@@ -173,20 +173,13 @@ test_that("running short to decimal conversion before and after expansion
             expect_equal(icd9DecimalToShort("123."), "123")
           })
 
-test_that("recompose parts realises when data frame is sent to major,
-          or vector to parts", {
-            expect_error(icd9PartsRecompose(major =
-                                              list(major = "100",
-                                                   minor = "98")))
-            expect_error(icd9PartsRecompose(list(major =
-                                                   "100", minor = "98")))
-            expect_error(icd9PartsRecompose(parts = c("100", "200")))
-          })
-
 test_that("parts to decimal", {
-  #expect_that(icd9PartsToDecimal("100", NA), equals("100"))
-  #expect_that(icd9PartsToDecimal("100", ""), equals("100"))
-  #expect_that(icd9PartsToDecimal("100", "1"), equals("100.1"))
+  expect_that(icd9PartsToDecimal(data.frame(major = "100", minor = NA)), equals("100"))
+  expect_that(icd9PartsToDecimal(data.frame(major = "100", minor = "")), equals("100"))
+  expect_that(icd9PartsToDecimal(data.frame(major = "100", minor = "1")), equals("100.1"))
+  expect_that(icd9MajMinToDecimal("100", NA), equals("100"))
+  expect_that(icd9MajMinToDecimal("100", ""), equals("100"))
+  expect_that(icd9MajMinToDecimal("100", "1"), equals("100.1"))
 })
 
 test_that("parts to short invalid inputs", {
@@ -256,7 +249,14 @@ test_that("parts to short V code inputs", {
 
 test_that("icd9 parts to short: don't allow cycling.", {
   expect_error(icd9MajMinToShort(c("123", "34", "56"), c("1", "20")))
+  expect_error(icd9MajMinToShort(c("123", "34"), c("1", "20", "45"))) # causes hang only when compiled with MinGW GCC 4.9 in Rtools 3.2 on 64 bit
+})
+
+test_that("Windows Rtools 3.2 hang test", {
+  skip("don't crash winbuilder 64 bit R-devel 3.2 with Rtools 3.3 (GCC 4.9)")
   expect_error(icd9MajMinToShort(c("123", "34"), c("1", "20", "45")))
+  # see Rcpp issue #276. Now updated to use Rf_error instead of Rcpp::stop
+
 })
 
 test_that("icd9 parts to short form V and E input, mismatched lengths", {
@@ -267,10 +267,11 @@ test_that("icd9 parts to short form V and E input, mismatched lengths", {
 
 test_that("convert list of icd-9 ranges (e.g. chapter defintions to comorbidity map", {
 
-  ooe <- data.frame(visitId = sprintf("pt%02d", seq_along(one.of.each)), icd9 = one.of.each)
+  ooe <- data.frame(visitId = sprintf("pt%02d", seq_along(one_of_each)), icd9 = one_of_each)
 
   test.map <- icd9ChaptersToMap(icd9::icd9Chapters)
-  cmb <- icd9Comorbid(icd9df = ooe, isShort = FALSE, icd9Mapping = test.map, isShortMapping = TRUE)
+  cmb <- icd9Comorbid(icd9df = ooe, isShort = FALSE, icd9Mapping = test.map,
+                      isShortMapping = TRUE, return.df = TRUE)
   cmbcmp <- unname(as.matrix(logicalToBinary(cmb)[-1]))
   expmat <- diag(nrow = length(ooe$icd9))
   expect_equivalent(cmbcmp, expmat)
@@ -284,6 +285,4 @@ test_that("code routes through RcppExports.R and slower versions", {
                data.frame(major = "100", minor = "1", stringsAsFactors = FALSE))
   expect_equal(icd9ShortToParts(c("99999", "0011")),
                data.frame(major = c("999", "001"), minor = c("99", "1"), stringsAsFactors = FALSE))
-  # expect_identical(icd9ShortToParts("1001"), icd9ShortToParts_cpp_slow("1001"))
-  expect_identical(icd9ShortToParts("1001"), icd9ShortToParts_cpp_test("1001"))
 })

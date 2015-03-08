@@ -37,24 +37,31 @@
 #' @export
 icd9Charlson <- function(x, visitId = NULL,
                          return.df = FALSE,
-                         stringsAsFactors = getOption("stringsAsFacotrs"),
-                         ...) {
-  stopifnot(is.data.frame(x))
-  if (is.null(visitId))
-    visitId <- names(x)[1]
-  else
-    stopifnot(visitId %in% names(x))
-  stopifnot(is.character(visitId))
-  stopifnot(length(visitId) == 1)
-  stopifnot(is.logical(return.df))
-  stopifnot(length(return.df) == 1)
-  res <- icd9CharlsonComorbid(
-    icd9ComorbidQuanDeyo(x, visitId, applyHierarchy = TRUE, ...))
+                         stringsAsFactors = getOption("stringsAsFactors"),
+                         ...)
+  UseMethod("icd9Charlson")
 
-  if (return.df) return(cbind(x[visitId],
-                              data.frame("Charlson" = res),
-                              stringsAsFactors = stringsAsFactors))
-  res
+#' @describeIn icd9Charlson Charlson scores from data frame of visits and ICD-9 codes
+#' @export
+icd9Charlson.data.frame <- function(x, visitId = NULL,
+                                    return.df = FALSE,
+                                    stringsAsFactors = getOption("stringsAsFactors"),
+                                    ...) {
+  checkmate::assertDataFrame(x, min.rows = 0, min.cols = 2, col.names = "named")
+  checkmate::assertFlag(return.df)
+  visitId <- getVisitId(x, visitId)
+  tmp <- icd9ComorbidQuanDeyo(x, visitId, applyHierarchy = TRUE,
+                              return.df = TRUE, ...)
+  res <- icd9CharlsonComorbid(tmp, visitId = visitId, applyHierarchy = FALSE)
+
+  # TODO someday it might be nice (like with comorbid.R) to recreate a factor
+  # with the same levels for visitId if this is what is given to us.
+  if (!return.df) return(res)
+  out <- cbind(names(res),
+               data.frame("Charlson" = unname(res)),
+               stringsAsFactors = stringsAsFactors)
+  names(out)[1] <- visitId
+  out
 }
 
 #' @rdname icd9Charlson
@@ -62,37 +69,31 @@ icd9Charlson <- function(x, visitId = NULL,
 #'   drop DM if DMcx is present, etc.
 #' @export
 icd9CharlsonComorbid <- function(x, visitId = NULL, applyHierarchy = FALSE) {
-  stopifnot(is.data.frame(x))
-  if (is.null(visitId)) {
-    if (!any(names(x) == "visitId"))
-      visitId <- names(x)[1]
-    else
-      visitId <- "visitId"
-  } else
-    stopifnot(visitId %in% names(x))
-  stopifnot(is.character(visitId))
-  stopifnot(length(visitId) == 1)
-
-  stopifnot(ncol(x) == 18)
+  stopifnot(is.data.frame(x) || is.matrix(x))
+  stopifnot(ncol(x) - is.data.frame(x) == 17)
   weights <- c(1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
                2, 2, 2, 2,
                3, 6, 6)
 
-
   if (applyHierarchy) {
-    x$DM <- x$DM & !x$DMcx
-    x$LiverMild <- x$LiverMild & !x$LiverSevere
-    x$Cancer <- x$Cancer & !x$Mets
+    x[,"DM"] <- x[, "DM"] & !x[, "DMcx"]
+    x[, "LiverMild"] <- x[, "LiverMild"] & !x[, "LiverSevere"]
+    x[, "Cancer"] <- x[, "Cancer"] & !x[, "Mets"]
   } else {
-    stopifnot(!any(x$DM & x$DMcx))
-    stopifnot(!any(x$LiverMild & x$LiverSevere))
-    stopifnot(!any(x$Cancer & x$Mets))
+    stopifnot(!any(x[, "DM"] & x[, "DMcx"]))
+    stopifnot(!any(x[, "LiverMild"] & x[, "LiverSevere"]))
+    stopifnot(!any(x[, "Cancer"] & x[, "Mets"]))
   }
-  m <- as.matrix(x[, names(x) %nin% visitId])
-  rowSums(m * weights)
+  if (is.data.frame(x)) {
+    visitId <- getVisitId(x, visitId)
+    visitIdNames <- x[[visitId]]
+    x <- as.matrix(x[, names(x) %nin% visitId])
+    rownames(x) <- visitIdNames
+  }
+  rowSums(t(t(x) * weights))
 }
 
-#' @title count icd9 codes or comorbidities for each patient
+#' @title count ICD codes or comorbidities for each patient
 #' @rdname icd9Count
 #' @description \code{icd9Count} takes a data frame with a column for
 #'   \code{visitId} and another for ICD-9 code, and returns the number of
@@ -120,7 +121,7 @@ icd9CharlsonComorbid <- function(x, visitId = NULL, applyHierarchy = FALSE) {
 #'   icd9Count(mydf, return.df = TRUE)
 #'   icd9Count(mydf)
 #'
-#'   cmb <- icd9ComorbidQuanDeyo(mydf, isShort = FALSE)
+#'   cmb <- icd9ComorbidQuanDeyo(mydf, isShort = FALSE, return.df = TRUE)
 #'   icd9CountComorbidBin(cmb)
 #'
 #'   wide <- data.frame(visitId = c("r", "s", "t"),
@@ -134,13 +135,7 @@ icd9CharlsonComorbid <- function(x, visitId = NULL, applyHierarchy = FALSE) {
 #' @export
 icd9Count <- function(x, visitId = NULL, return.df = FALSE) {
   stopifnot(is.data.frame(x))
-  if (is.null(visitId)) {
-    if (!any(names(x) == "visitId"))
-      visitId <- names(x)[1]
-    else
-      visitId <- "visitId"
-  } else
-    stopifnot(visitId %in% names(x))
+  visitId <- getVisitId(x, visitId)
   stopifnot(is.character(visitId))
   stopifnot(length(visitId) == 1)
 
@@ -160,17 +155,8 @@ icd9Count <- function(x, visitId = NULL, return.df = FALSE) {
 #'   duplicated.
 #' @export
 icd9CountComorbidBin <- function(x, visitId = NULL, return.df = FALSE) {
-  stopifnot(is.data.frame(x))
-  if (is.null(visitId)) {
-    if (!any(names(x) == "visitId"))
-      visitId <- names(x)[1]
-    else
-      visitId <- "visitId"
-  } else
-    stopifnot(visitId %in% names(x))
-  stopifnot(is.character(visitId))
-  stopifnot(length(visitId) == 1)
-
+  visitId <- getVisitId(x, visitId)
+  visitId <- getVisitId(x, visitId)
   res <- apply(x[, names(x) %nin% visitId],
                MARGIN = 1,
                FUN = sum)
@@ -182,7 +168,7 @@ icd9CountComorbidBin <- function(x, visitId = NULL, return.df = FALSE) {
 
 #' @rdname icd9Count
 #' @description For \code{icd9Count}, it is assumed that all the columns apart
-#'   from \code{vistiId} represent actual or possible ICD-9 codes. Duplicate
+#'   from \code{visitId} represent actual or possible ICD-9 codes. Duplicate
 #'   \code{visitId}s are repeated as given and aggregated.
 #' @param aggregate, single logical, default is FALSE. If TRUE, the length (or
 #'   rows) of the output will no longer match the input, but duplicate visitIds
@@ -192,18 +178,9 @@ icd9CountWide <- function(x,
                           visitId = NULL,
                           return.df = FALSE,
                           aggregate = FALSE) {
-  stopifnot(is.data.frame(x))
-  stopifnot(is.logical(return.df))
-  stopifnot(is.logical(aggregate))
-  if (is.null(visitId)) {
-    if (!any(names(x) == "visitId"))
-      visitId <- names(x)[1]
-    else
-      visitId <- "visitId"
-  } else
-    stopifnot(visitId %in% names(x))
-  stopifnot(is.character(visitId))
-  stopifnot(length(visitId) == 1)
+  visitId <- getVisitId(x, visitId)
+  checkmate::assertFlag(return.df)
+  checkmate::assertFlag(aggregate)
 
   res <- apply(x[names(x) %nin% visitId], 1, function(x) sum(!is.na(x)))
   names(res) <- x[[visitId]]

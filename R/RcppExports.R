@@ -2,9 +2,11 @@
 # Generator token: 10BE3573-1514-4C36-9D1C-5A225CD40393
 
 #' @rdname icd9Comorbid
-#' @export
-icd9ComorbidShort <- function(icd9df, icd9Mapping, visitId = "visitId", icd9Field = "icd9") {
-    .Call('icd9_icd9ComorbidShort', PACKAGE = 'icd9', icd9df, icd9Mapping, visitId, icd9Field)
+#' @description RcppParallel approach with openmp and vector of integer strategy
+#' @param aggregate single logical value, if /code{TRUE}, then take (possible much) more time to aggregate out-of-sequence visit IDs in the icd9df data.frame. If this is \code{FALSE}, then each contiguous group of visit IDs will result in a row of comorbidities in the output data. If you know your visitIds are possible disordered, then use \code{TRUE}.
+#' @keywords internal
+icd9ComorbidShortCpp <- function(icd9df, icd9Mapping, visitId = "visitId", icd9Field = "icd9", threads = 8L, chunkSize = 256L, ompChunkSize = 1L, aggregate = TRUE) {
+    .Call('icd9_icd9ComorbidShortCpp', PACKAGE = 'icd9', icd9df, icd9Mapping, visitId, icd9Field, threads, chunkSize, ompChunkSize, aggregate)
 }
 
 #' @rdname convert
@@ -78,18 +80,6 @@ icd9GetMajor <- function(icd9, isShort) {
     .Call('icd9_icd9GetMajor', PACKAGE = 'icd9', icd9, isShort)
 }
 
-icd9IsASingleV <- function(s) {
-    .Call('icd9_icd9IsASingleV', PACKAGE = 'icd9', s)
-}
-
-icd9IsASingleE <- function(s) {
-    .Call('icd9_icd9IsASingleE', PACKAGE = 'icd9', s)
-}
-
-icd9IsASingleVE <- function(s) {
-    .Call('icd9_icd9IsASingleVE', PACKAGE = 'icd9', s)
-}
-
 #' @name icd9Is
 #' @title are the given codes numeric, V or E type?
 #' @description Quickly find V or E codes, without any validation.
@@ -107,18 +97,31 @@ icd9IsE <- function(icd9) {
 
 #' @rdname icd9Is
 #' @export
-icd9IsVE <- function(icd9) {
-    .Call('icd9_icd9IsVE', PACKAGE = 'icd9', icd9)
-}
-
-#' @rdname icd9Is
-#' @export
 icd9IsN <- function(icd9) {
     .Call('icd9_icd9IsN', PACKAGE = 'icd9', icd9)
 }
 
+icd9LongToWideCpp <- function(icd9df, visitId = "visitId", icd9Field = "icd9", aggregate = TRUE) {
+    .Call('icd9_icd9LongToWideCpp', PACKAGE = 'icd9', icd9df, visitId, icd9Field, aggregate)
+}
+
 icd9AddLeadingZeroesMajorSingle <- function(major) {
     .Call('icd9_icd9AddLeadingZeroesMajorSingle', PACKAGE = 'icd9', major)
+}
+
+#' @rdname icd9AddLeadingZeroes
+icd9AddLeadingZeroesMajor <- function(major) {
+    .Call('icd9_icd9AddLeadingZeroesMajor', PACKAGE = 'icd9', major)
+}
+
+#' @rdname icd9AddLeadingZeroes
+icd9AddLeadingZeroesShort <- function(icd9Short) {
+    .Call('icd9_icd9AddLeadingZeroesShort', PACKAGE = 'icd9', icd9Short)
+}
+
+#' @rdname icd9AddLeadingZeroes
+icd9AddLeadingZeroesDecimal <- function(icd9Decimal) {
+    .Call('icd9_icd9AddLeadingZeroesDecimal', PACKAGE = 'icd9', icd9Decimal)
 }
 
 #' @title Add leading zeroes to incomplete ICD codes
@@ -133,21 +136,6 @@ icd9AddLeadingZeroesMajorSingle <- function(major) {
 #' @keywords internal manip
 icd9AddLeadingZeroes <- function(icd9, isShort) {
     .Call('icd9_icd9AddLeadingZeroes', PACKAGE = 'icd9', icd9, isShort)
-}
-
-#' @rdname icd9AddLeadingZeroes
-icd9AddLeadingZeroesShort <- function(icd9Short) {
-    .Call('icd9_icd9AddLeadingZeroesShort', PACKAGE = 'icd9', icd9Short)
-}
-
-#' @rdname icd9AddLeadingZeroes
-icd9AddLeadingZeroesDecimal <- function(icd9Decimal) {
-    .Call('icd9_icd9AddLeadingZeroesDecimal', PACKAGE = 'icd9', icd9Decimal)
-}
-
-#' @rdname icd9AddLeadingZeroes
-icd9AddLeadingZeroesMajor <- function(major) {
-    .Call('icd9_icd9AddLeadingZeroesMajor', PACKAGE = 'icd9', major)
 }
 
 #' @title expand decimal part of ICD-9 code to cover all possible sub-codes
@@ -170,21 +158,16 @@ icd9ExpandMinor <- function(minor, isE = FALSE) {
     .Call('icd9_icd9ExpandMinor', PACKAGE = 'icd9', minor, isE)
 }
 
-icd9Children_cpp <- function(icd9, isShort, onlyReal = TRUE) {
-    .Call('icd9_icd9Children_cpp', PACKAGE = 'icd9', icd9, isShort, onlyReal)
+icd9ChildrenShortCpp <- function(icd9Short, onlyReal) {
+    .Call('icd9_icd9ChildrenShortCpp', PACKAGE = 'icd9', icd9Short, onlyReal)
 }
 
-#' @rdname icd9Children
-#' @name icd9Children
-#' @export
-icd9ChildrenShort <- function(icd9Short, onlyReal = TRUE) {
-    .Call('icd9_icd9ChildrenShort', PACKAGE = 'icd9', icd9Short, onlyReal)
+icd9ChildrenDecimalCpp <- function(icd9Decimal, onlyReal) {
+    .Call('icd9_icd9ChildrenDecimalCpp', PACKAGE = 'icd9', icd9Decimal, onlyReal)
 }
 
-#' @rdname icd9Children
-#' @export
-icd9ChildrenDecimal <- function(icd9Decimal, onlyReal = TRUE) {
-    .Call('icd9_icd9ChildrenDecimal', PACKAGE = 'icd9', icd9Decimal, onlyReal)
+icd9ChildrenCpp <- function(icd9, isShort, onlyReal = TRUE) {
+    .Call('icd9_icd9ChildrenCpp', PACKAGE = 'icd9', icd9, isShort, onlyReal)
 }
 
 #' @title match ICD9 codes
@@ -201,40 +184,20 @@ icd9InReferenceCode <- function(icd9, icd9Reference, isShort, isShortReference =
     .Call('icd9_icd9InReferenceCode', PACKAGE = 'icd9', icd9, icd9Reference, isShort, isShortReference)
 }
 
-icd9IsV_cpp_slower <- function(sv) {
-    .Call('icd9_icd9IsV_cpp_slower', PACKAGE = 'icd9', sv)
+strimCpp <- function(s) {
+    .Call('icd9_strimCpp', PACKAGE = 'icd9', s)
 }
 
-icd9ShortToParts_cpp_slow <- function(icd9Short, minorEmpty = "") {
-    .Call('icd9_icd9ShortToParts_cpp_slow', PACKAGE = 'icd9', icd9Short, minorEmpty)
+trimCpp <- function(sv) {
+    .Call('icd9_trimCpp', PACKAGE = 'icd9', sv)
 }
 
-icd9MajMinToParts_slower <- function(major, minor) {
-    .Call('icd9_icd9MajMinToParts_slower', PACKAGE = 'icd9', major, minor)
+assertFactorOrCharacter <- function(x) {
+    .Call('icd9_assertFactorOrCharacter', PACKAGE = 'icd9', x)
 }
 
-icd9IsV_cpp_slow <- function(sv) {
-    .Call('icd9_icd9IsV_cpp_slow', PACKAGE = 'icd9', sv)
-}
-
-icd9IsE_cpp_slow <- function(sv) {
-    .Call('icd9_icd9IsE_cpp_slow', PACKAGE = 'icd9', sv)
-}
-
-icd9IsVE_cpp_slow <- function(sv) {
-    .Call('icd9_icd9IsVE_cpp_slow', PACKAGE = 'icd9', sv)
-}
-
-icd9ShortToParts_cpp_test <- function(icd9Short, minorEmpty = "") {
-    .Call('icd9_icd9ShortToParts_cpp_test', PACKAGE = 'icd9', icd9Short, minorEmpty)
-}
-
-strim_cpp <- function(s) {
-    .Call('icd9_strim_cpp', PACKAGE = 'icd9', s)
-}
-
-trim_cpp <- function(sv) {
-    .Call('icd9_trim_cpp', PACKAGE = 'icd9', sv)
+getOmpCores <- function() {
+    .Call('icd9_getOmpCores', PACKAGE = 'icd9')
 }
 
 # Register entry points for exported C++ functions
