@@ -1,3 +1,20 @@
+# Copyright (C) 2014 - 2015  Jack O. Wasey
+#
+# This file is part of icd9.
+#
+# icd9 is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# icd9 is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with icd9. If not, see <http:#www.gnu.org/licenses/>.
+
 #' @title check whether ICD-9 codes are syntactically valid
 #' @description This does not check whether the code coresponds to a real
 #'   ICD-9-CM billing code, or parent grouping. For that, see
@@ -5,12 +22,19 @@
 #'
 #'   Factors are accepted, and since the validation is done with \code{grepl}
 #'   these are handled correctly.
-#' @section Three-digit validation:
-#'   \code{isValidMajor} validates just the 'major' three-digit part of an ICD-9
-#'   code. This can in fact be provided as a numeric, since there is no
-#'   ambiguity. Numeric-only codes should be one to three digitis, V codes are
-#'   followed by one or two digits, and E codes always by three digits between
-#'   800 and 999.
+#'
+#'   Currently, there is a limitation on NA values. Calling with \code{NA}
+#'   (which is a logical vector of length one by default) fails, because it is
+#'   not a string. This is rarely of significance in real life, since the NA
+#'   will be part of a character vector of codes, and will therefore be cast
+#'   already to \code{NA_character}
+#'
+#'   \code{NA} values result in a return value of \code{FALSE}.
+#' @section Three-digit validation: \code{isValidMajor} validates just the
+#'   'major' three-digit part of an ICD-9 code. This can in fact be provided as
+#'   a numeric, since there is no ambiguity. Numeric-only codes should be one to
+#'   three digitis, V codes are followed by one or two digits, and E codes
+#'   always by three digits between 800 and 999.
 #' @template major
 #' @details Leading zeroes in the decimal form are not ambiguous. Although
 #'   integer ICD-9 codes could be intended by the user, there is a difference
@@ -33,7 +57,7 @@
 #'                      "V2", "V34", "V567", "E", "E1", "E70", "E"))
 #' @export
 icd9IsValid <- function(icd9, isShort) {
-  checkmate::assertFlag(isShort)
+  assertFlag(isShort)
   if (isShort) icd9IsValidShort(icd9) else icd9IsValidDecimal(icd9)
 }
 
@@ -168,9 +192,9 @@ icd9IsValidMajorE <- function(major)
 #' @family ICD9 validation
 #' @export
 icd9IsValidMapping <- function(icd9Mapping, isShort) {
-  checkmate::assertList(icd9Mapping, types = "character", any.missing = FALSE,
-                        min.len = 1, unique = TRUE, names = "named")
-  checkmate::checkFlag(isShort)
+  assertList(icd9Mapping, types = "character", any.missing = FALSE,
+             min.len = 1, unique = TRUE, names = "named")
+  checkFlag(isShort)
   # TOOD: warn/return the invalid labels
   all(unlist(
     lapply(icd9Mapping, FUN = function(icd9Map) icd9IsValid(icd9Map, isShort)),
@@ -217,27 +241,27 @@ icd9GetInvalidMappingDecimal <- function(icd9Mapping) {
 icd9GetValid <- function(icd9, isShort = icd9GuessIsShort(icd9))
   icd9[icd9IsValid(icd9, isShort = isShort)]
 
-#' @describeIn icd9GetValid
+#' @describeIn icd9GetValid Returns subset of codes which are in valid decimal format, e.g. "100" or "V01.10"
 #' @export
 icd9GetValidDecimal <- function(icd9Decimal)
   icd9Decimal[icd9IsValidDecimal(icd9Decimal)]
 
-#' @describeIn icd9GetValid
+#' @describeIn icd9GetValid Returns subset of codes which are in valid short format, e.g. "E800" or "41001"
 #' @export
 icd9GetValidShort <- function(icd9Short)
   icd9Short[icd9IsValidShort(icd9Short)]
 
-#' @describeIn icd9GetValid
+#' @describeIn icd9GetValid Returns subset of codes which are not in valid short or decimal format.
 #' @export
 icd9GetInvalid <- function(icd9, isShort = icd9GuessIsShort(icd9))
   icd9[!icd9IsValid(icd9, isShort = isShort)]
 
-#' @describeIn icd9GetValid
+#' @describeIn icd9GetValid Returns subset of codes which are not in valid decimal format.
 #' @export
 icd9GetInvalidDecimal <- function(icd9Decimal)
   icd9Decimal[!icd9IsValidDecimal(icd9Decimal)]
 
-#' @describeIn icd9GetValid
+#' @describeIn icd9GetValid Returns subset of codes which are not in valid short format.
 #' @export
 icd9GetInvalidShort <- function(icd9Short)
   icd9Short[!icd9IsValidShort(icd9Short)]
@@ -248,61 +272,25 @@ icd9IsMajor <- function(icd9) {
   nchar(icd9) - icd9IsE(icd9) < 4
 }
 
-#' @title Check whether ICD-9 codes exist
-#' @description This is different from syntactic validity: it looks it up in the
-#'   canonical list of ICD-9 codes published by the CMS, and which are included
-#'   in this package under \code{extdata}. Checking syntactic validity using
-#'   \code{link{icd9IsValid}} etc. is still useful, with a changing list of
-#'   icd-9 codes over time, and possible imperfections in the master lists
-#'   derived from CMS.
+#' @title do codes belong to numeric, V or E classes?
+#' @description For each code, return \code{TRUE} if numric or \code{FALSE} if a
+#'   V or E code.
 #' @template icd9-any
-#' @template icd9-short
-#' @template icd9-decimal
-#' @template isShort
-#' @param majorOk single logical, if \code{TRUE} will consider a three-digit
-#'   code to be real, even though the majority of three-digit codes aren't
-#'   billable (which is at present synonmous with 'realness').
 #' @return logical vector
 #' @export
-icd9IsReal <- function(icd9, isShort = icd9GuessIsShort(icd9), majorOk = TRUE) {
-  if (isShort) return(icd9IsRealShort(icd9, majorOk = majorOk))
-  icd9IsRealDecimal(icd9, majorOk = majorOk)
-}
+icd9IsN <- function(icd9)
+  icd9IsA(asCharacterNoWarn(icd9), "VEve", TRUE)
 
-#' @describeIn icd9IsReal
+#' @describeIn icd9IsN are the given codes V type?
 #' @export
-icd9IsRealShort <- function(icd9Short, majorOk = TRUE) {
-  assertFactorOrCharacter(icd9Short)
-  icd9Short <- asCharacterNoWarn(icd9Short)
-  checkmate::assertFlag(majorOk)
-  if (majorOk)
-    return(icd9Short %in% c(icd9::icd9Hierarchy[["icd9"]],
-                            icd9::icd9ChaptersMajor))
-  icd9Short %in% icd9::icd9Hierarchy[["icd9"]]
-}
+icd9IsV <- function(icd9)
+  icd9IsA(asCharacterNoWarn(icd9), "Vv")
 
-#' @describeIn icd9IsReal
-#' @export
-icd9IsRealDecimal <- function(icd9Decimal, majorOk = TRUE) {
-  icd9IsRealShort(icd9DecimalToShort(icd9Decimal), majorOk = majorOk)
-}
 
-#' @describeIn icd9IsReal
+#' @describeIn icd9IsN are the given codes E type?
 #' @export
-icd9GetReal <- function(icd9, isShort = icd9GuessIsShort(icd9), majorOk = TRUE) {
-  if (isShort) return(icd9GetRealShort(icd9, majorOk = majorOk))
-  icd9GetRealDecimal(icd9, majorOk = majorOk)
-}
-
-#' @describeIn icd9IsReal
-#' @export
-icd9GetRealShort <- function(icd9Short, majorOk = TRUE)
-  icd9Short[icd9IsRealShort(icd9Short, majorOk = majorOk)]
-
-#' @describeIn icd9IsReal
-#' @export
-icd9GetRealDecimal <- function(icd9Decimal, majorOk = TRUE)
-  icd9Decimal[icd9IsRealDecimal(icd9Decimal, majorOk = majorOk)]
+icd9IsE <- function(icd9)
+  icd9IsA(asCharacterNoWarn(icd9), "Ee")
 
 warnNumericCode <- function()
   warning("input data is in numeric format. This can easily lead to errors in short or decimal codes, e.g. short code 1000: is it 10.00 or 100.0; or decimal codes, e.g. 10.1 was supposed to be 10.10", call. = FALSE) # nolint

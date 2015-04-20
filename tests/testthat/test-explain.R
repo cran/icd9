@@ -1,3 +1,20 @@
+# Copyright (C) 2014 - 2015  Jack O. Wasey
+#
+# This file is part of icd9.
+#
+# icd9 is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# icd9 is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with icd9. If not, see <http:#www.gnu.org/licenses/>.
+
 context("explain ICD-9: code to human-readable")
 
 test_that("explain a large set of ICD-9 codes succinctly", {
@@ -9,9 +26,7 @@ test_that("explain a large set of ICD-9 codes succinctly", {
       "Other acute rheumatic heart disease",
       "Acute rheumatic heart disease, unspecified")
   )
-  # TODO: also warn or message if there are codes without explanations
 
-  #TODO same but condensing
   expect_identical(
     icd9ExplainShort(icd9ChildrenShort("391"), doCondense = TRUE),
     "Rheumatic fever with heart involvement"
@@ -63,25 +78,18 @@ test_that("expalin a single top level code without a top level explanation", {
 
 
 test_that("explain a single leaf node" , {
-  expect_equal(icd9ExplainShort("27800", doCondense = FALSE),
-               "Obesity, unspecified")
-  expect_equal(icd9ExplainShort("27800", doCondense = TRUE),
-               "Obesity, unspecified")
+  expect_equal(icd9ExplainShort("27800", doCondense = FALSE), "Obesity, unspecified")
+  expect_equal(icd9ExplainShort("27800", doCondense = TRUE), "Obesity, unspecified")
+  expect_equal(icd9Explain("00329"), "Other localized salmonella infections")
 })
 
-# TODO:
-# use cases for explaining ICD-9 codes:
-test_that("given ICD-9 codes all have human-readable explanations", {
+test_that("explain handles mix of valid and invalid", {
+  expect_equal(icd9Explain(c("radishes", "123"), warn = FALSE), "Other cestode infection")
+  expect_warning(icd9Explain(c("radishes", "123")))
 })
-test_that("some valid ICD-9 codes are human-readable, some aren't", {
-})
-test_that("some valid ICD-9 codes are human-readable,
-          but some aren't, and some are invalid", {
-          })
-test_that("none ICD-9 codes have human-readable explanations,
-          but are all valid", {
-          })
-test_that("none ICD-9 codes are even valid", {
+
+test_that("explain works when none ICD-9 codes are even valid", {
+  expect_equal(icd9Explain(c("radishes", "123123", NA), warn = FALSE), character(0))
 })
 
 
@@ -113,9 +121,6 @@ test_that("guess with just majors", {
   # which is usually the most direct route to an answer
   expect_true(icd9GuessIsShort(c("100", "101", "102")))
 })
-
-# TODO, set up long chain of multiple conversions as kind of integration test,
-# and to flush out errors.
 
 test_that("extract top-level codes from the RTF gives the complete list", {
   # total number of codes
@@ -149,30 +154,28 @@ test_that("extract top-level codes from the RTF gives the complete list", {
     icd9ChaptersMajor[["Other and unspecified congenital anomalies"]],
     structure("759", .Names = "major"))
 
-  #expect_equal(icd9ChaptersMajor[[""]], "")
-
   # format of each hierarchy level:
   expect_equal(names(icd9Chapters[[1]]), c("start", "end"))
   expect_equal(names(icd9ChaptersSub[[1]]), c("start", "end"))
   expect_equal(names(icd9ChaptersMajor[[1]]), c("major"))
   # should be no NA values
-  expect_true(all(!is.na(vapply(icd9Chapters, "[[", FUN.VALUE="", 1))))
-  expect_true(all(!is.na(vapply(icd9Chapters, "[[", FUN.VALUE="", 2))))
-  expect_true(all(!is.na(vapply(icd9ChaptersSub, "[[", FUN.VALUE="", 1))))
-  expect_true(all(!is.na(vapply(icd9ChaptersSub, "[[", FUN.VALUE="", 2))))
-  expect_true(all(!is.na(vapply(icd9ChaptersMajor, "[[", FUN.VALUE="", 1))))
+  expect_true(all(!is.na(vapply(icd9Chapters, "[[", FUN.VALUE = "", 1))))
+  expect_true(all(!is.na(vapply(icd9Chapters, "[[", FUN.VALUE = "", 2))))
+  expect_true(all(!is.na(vapply(icd9ChaptersSub, "[[", FUN.VALUE = "", 1))))
+  expect_true(all(!is.na(vapply(icd9ChaptersSub, "[[", FUN.VALUE = "", 2))))
+  expect_true(all(!is.na(vapply(icd9ChaptersMajor, "[[", FUN.VALUE = "", 1))))
 
   # all the range limits and majors should be valid majors
   expect_true(
-    all(icd9IsValidMajor(vapply(icd9Chapters, "[[", FUN.VALUE="", 1))))
+    all(icd9IsValidMajor(vapply(icd9Chapters, "[[", FUN.VALUE = "", 1))))
   expect_true(
-    all(icd9IsValidMajor(vapply(icd9Chapters, "[[", FUN.VALUE="", 2))))
+    all(icd9IsValidMajor(vapply(icd9Chapters, "[[", FUN.VALUE = "", 2))))
   expect_true(
-    all(icd9IsValidMajor(vapply(icd9ChaptersSub, "[[", FUN.VALUE="", 1))))
+    all(icd9IsValidMajor(vapply(icd9ChaptersSub, "[[", FUN.VALUE = "", 1))))
   expect_true(
-    all(icd9IsValidMajor(vapply(icd9ChaptersSub, "[[", FUN.VALUE="", 2))))
+    all(icd9IsValidMajor(vapply(icd9ChaptersSub, "[[", FUN.VALUE = "", 2))))
   expect_true(
-    all(icd9IsValidMajor(vapply(icd9ChaptersMajor, "[[", FUN.VALUE="", 1))))
+    all(icd9IsValidMajor(vapply(icd9ChaptersMajor, "[[", FUN.VALUE = "", 1))))
 })
 
 test_that("icd9ChaptersMajor - positive values", {
@@ -227,134 +230,9 @@ test_that("unsorted hierarchy tests", {
     tolower("Salmonella Meningitis"))
 })
 
-# this is hand written: use to verify top level of the web site scrape: TODO
-testChapters <- list(
-  "Infectious And Parasitic Diseases" = c(start = "001", end = "139"),
-  "Neoplasms" = c(start = "140", end = "239"),
-  "Endocrine, Nutritional And Metabolic Diseases, And Immunity Disorders" =
-    c(start = "240", end = "279"),
-  "Diseases Of The Blood And Blood-Forming Organs" =
-    c(start = "280", end = "289"),
-  "Mental Disorders" = c(start = "290", end = "319"),
-  "Diseases Of The Nervous System And Sense Organs" =
-    c(start = "320", end = "389"),
-  "Diseases Of The Circulatory System" = c(start = "390", end = "459"),
-  "Diseases Of The Respiratory System" = c(start = "460", end = "519"),
-  "Diseases Of The Digestive System" = c(start = "520", end = "579"),
-  "Diseases Of The Genitourinary System" = c(start = "580", end = "629"),
-  "Complications Of Pregnancy, Childbirth, And The Puerperium" =
-    c(start = "630", end = "679"),
-  "Diseases Of The Skin And Subcutaneous Tissue" =
-    c(start = "680", end = "709"),
-  "Diseases Of The Musculoskeletal System And Connective Tissue" =
-    c(start = "710", end = "739"),
-  "Congenital Anomalies" = c(start = "740", end = "759"),
-  "Certain Conditions Originating In The Perinatal Period" =
-    c(start = "760", end = "779"),
-  "Symptoms, Signs, And Ill-Defined Conditions" = c(start = "780", end = "799"),
-  "Injury And Poisoning" = c(start = "800", end = "999"),
-  "Supplementary Classification Of Factors Influencing \
-  Health Status And Contact With Health Services" =
-    c(start = "V01", end = "V99"),
-  "Supplementary Classification Of External Causes Of Injury And Poisoning  " =
-    c(start = "E000", end = "E999")
-)
-
-test_that("condense full ranges", {
-  # condensing to "real" means we don't get a lot of majors, which are often not
-  # themselves defined.
-  # majors:
-  expect_equal(icd9CondenseShort(icd9ChildrenShort("003", onlyReal = FALSE), onlyReal = FALSE), "003")
-  expect_equal(icd9CondenseShort(icd9ChildrenShort("3", onlyReal = FALSE), onlyReal = FALSE), "003")
-  expect_equal(icd9CondenseShort(icd9ChildrenShort("410", onlyReal = FALSE), onlyReal = FALSE), "410")
-  expect_equal(icd9CondenseShort(icd9ChildrenShort("V12", onlyReal = FALSE), onlyReal = FALSE), "V12")
-  expect_equal(icd9CondenseShort(icd9ChildrenShort("E800", onlyReal = FALSE), onlyReal = FALSE), "E800")
-  # repeat some tests with decimals instead
-  expect_equal(icd9CondenseDecimal(icd9Children("003", isShort = FALSE, onlyReal = FALSE), onlyReal = FALSE), "003")
-  expect_equal(icd9Condense(icd9ChildrenDecimal("3", onlyReal = FALSE), isShort = FALSE, onlyReal = FALSE), "003")
-  expect_equal(icd9CondenseDecimal(icd9ChildrenDecimal("410", onlyReal = FALSE), onlyReal = FALSE), "410")
-  expect_equal(icd9CondenseDecimal(icd9Children("V12", isShort = FALSE, onlyReal = FALSE), onlyReal = FALSE), "V12")
-  expect_equal(icd9CondenseDecimal(icd9ChildrenDecimal("E800", onlyReal = FALSE), onlyReal = FALSE), "E800")
-  # repeat some tests with decimals and smaller codes
-  expect_equal(icd9CondenseDecimal(icd9Children("003.2", isShort = FALSE, onlyReal = FALSE), onlyReal = FALSE),
-               "003.2")
-  expect_equal(icd9Condense(icd9ChildrenDecimal("3.2", onlyReal = FALSE), isShort = FALSE, onlyReal = FALSE),
-               "003.2")
-  expect_equal(icd9CondenseDecimal(icd9ChildrenDecimal("410.0", onlyReal = FALSE), onlyReal = FALSE), "410.0")
-  expect_equal(icd9CondenseDecimal(icd9Children("V12", isShort = FALSE, onlyReal = FALSE), onlyReal = FALSE), "V12")
-  expect_equal(icd9CondenseDecimal(icd9ChildrenDecimal("E800", onlyReal = FALSE), onlyReal = FALSE), "E800")
-
-  expect_equal(icd9CondenseShort(icd9ChildrenShort("0031", onlyReal = FALSE), onlyReal = FALSE), "0031")
-  # major is allowed
-  expect_equal(icd9CondenseShort(c("003", othersalmonella), onlyReal = TRUE), "003")
-  # major is returned
-  expect_equal(icd9CondenseShort(othersalmonella, onlyReal = TRUE), "003")
-  expect_equal(icd9CondenseShort(othersalmonella, onlyReal = FALSE), othersalmonella)
-  # now do we find a missing major if all chilren present?
-  almostall003 <- icd9ChildrenShort("003", onlyReal = FALSE)
-  almostall003 <- almostall003[almostall003 != "003"] # drop the major
-  expect_equal(icd9CondenseShort(almostall003, onlyReal = FALSE, toMajor = TRUE), "003")
-
-  # tomajor = false
-  expect_equal(icd9CondenseShort(icd9ChildrenShort("0031", onlyReal = FALSE),
-                                 onlyReal = FALSE, toMajor = FALSE), "0031")
-  # major is allowed
-  expect_that(res <- icd9CondenseShort(c("003", othersalmonella),
-                                       onlyReal = TRUE, toMajor = FALSE),
-              gives_warning())
-  expect_equal(res, character())
-  # major is returned
-  expect_equal(icd9CondenseShort(othersalmonella, onlyReal = TRUE), "003")
-  expect_equal(icd9CondenseShort(othersalmonella, onlyReal = FALSE), othersalmonella)
-  # now do we find a missing major if all chilren present?
-  almostall003 <- icd9ChildrenShort("003", onlyReal = FALSE)
-  almostall003 <- almostall003[almostall003 != "003"] # drop the major
-  expect_equal(icd9CondenseShort(almostall003, onlyReal = FALSE, toMajor = TRUE), "003")
-
-})
-
-test_that("condense single major and its children", {
-  # message for not specifying onlyReal
-  expect_that(res <- icd9CondenseShort("003"), shows_message())
-  expect_equal(res, "003")
-
-  skip("TODO: recode these as Explain tests")
-  expect_equal(icd9ExplainShort("391"),
-               "Rheumatic fever with heart involvement")
-  expect_equal(icd9ExplainShort(icd9ChildrenShort("391")),
-               "Rheumatic fever with heart involvement")
-  expect_equal(icd9ExplainShort(icd9ChildrenShort("391", onlyReal = TRUE)),
-               "Rheumatic fever with heart involvement")
-})
-
-test_that("condense short range", {
-
-  expect_equal(icd9ExplainShort(icd9Short = othersalmonella),
-               "Other salmonella infections")
-  expect_equal(icd9ExplainShort(icd9Short = othersalmonella[-3]),
-               icd9Hierarchy[c(9, 10, 12:18), "descLong"])
-
-  expect_equal(icd9CondenseToMajorShort(othersalmonella, onlyReal = TRUE), "003")
-  expect_equal(icd9CondenseToMajorShort(othersalmonella, onlyReal = FALSE),
-               othersalmonella)
-  expect_equal(icd9CondenseToMajorShort(othersalmonella[-3], onlyReal = TRUE),
-               othersalmonella[-3])
-  expect_equal(icd9CondenseToMajorShort(othersalmonella[-3], onlyReal = FALSE),
-               othersalmonella[-3])
-
-  expect_equal(sort(icd9ChildrenShort(icd9Short = "001", onlyReal = TRUE)),
-               c("0010", "0011", "0019"))
-
-  expect_equal(icd9CondenseShort(icd9ChildrenShort("00320", onlyReal = TRUE), onlyReal = TRUE), "00320")
+test_that("explain gives appropriate warnings by default", {
   # if we ask for real codes, we should expect all real codes as input:
-  expect_that(icd9CondenseShort(c("0032", icd9ChildrenShort("0032", onlyReal = TRUE)), onlyReal = TRUE),
-              gives_warning())
-  # but majors should be okay, even if not 'real'
-  expect_that(icd9CondenseShort(c("003", icd9ChildrenShort("003", onlyReal = TRUE))),
-              testthat::not(gives_warning()))
-  # unless we excluded majors:
-  expect_that(icd9CondenseShort(c("003", icd9ChildrenShort("003", onlyReal = TRUE)), toMajor = FALSE), shows_message())
-
+  expect_that(icd9CondenseShort("E7777", onlyReal = TRUE, warn = TRUE), gives_warning())
 })
 
 test_that("explain icd9GetChapters bad input", {
@@ -396,22 +274,19 @@ test_that("explain icd9GetChapters simple input", {
   expect_equal(chaps3, chaps7)
   expect_equal(chaps3, chaps8)
 
-  #TODO: decide whether to give NA rows if the major group doesn't exist, or
-  #whether also to do this for non-existent minor parts. E.g. 41710 doesn't
-  #exist, but 4171 does. Should we give a NA row back or not?
 })
 
 test_that("working with named lists of codes, decimal is guessed", {
-  expect_that(icd9ExplainDecimal(list(a = c("001"), b = c("001.1", "001.9"))), testthat::not(gives_warning()))
-  expect_that(icd9Explain(list(a = c("001"), b = c("001.1", "001.9"))), testthat::not(gives_warning()))
+  expect_that(icd9ExplainDecimal(list(a = c("001"), b = c("001.1", "001.9"))),
+              testthat::not(gives_warning()))
+  expect_that(icd9Explain(list(a = c("001"), b = c("001.1", "001.9"))),
+              testthat::not(gives_warning()))
 })
 
 test_that("icd9 descriptions is parsed correctly", {
-  x <- parseIcd9Descriptions()
-  expect_equal(names(x), c("icd9", "descLong", "descShort"))
+  skip_online_tests()
+  x <- parseLeafDescriptionsVersion(version = "32", fromWeb = TRUE)
+  expect_equal(names(x), c("icd9", "descShort", "descLong"))
   expect_equal(nrow(x), 14567)
   expect_true(is.character(x$icd9))
-  # TODO: add specific tests, e.g. for Menieres with non-standard character
-  # sets, punctuation
-  # most of the results of this are already tested in icd9Hierarchy
 })

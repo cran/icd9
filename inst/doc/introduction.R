@@ -4,6 +4,7 @@ suppressWarnings({
     #library(knitr, warn.conflicts = FALSE) # for opts_chunk only
     library(icd9)
     library(magrittr)
+    library(xtable)
     })
   })
 
@@ -24,11 +25,7 @@ patientData <- data.frame(
 patientData
 
 ## ----showdatwide,echo=FALSE----------------------------------------------
-oldsaf <- options("stringsAsFactors" = FALSE)
-pd2 <- patientData %>% icd9LongToWide
-options(oldsaf)
-pd2[is.na(pd2)] <- ""
-pd2
+head(vermont_dx[c(1, 6:15)])
 
 ## ----getcomorbidities----------------------------------------------------
 icd9ComorbidAhrq(patientData)[, 1:8]
@@ -60,7 +57,7 @@ icd9IsValidShort(c("1", "001", "100", "123456", "003.21"))
 # get all possible codes
 "003" %i9sa% "0033" %>% head(9) # show first 9 of 111 values
 # just get the ones which correspond to diagnoses (keeping the 3-digit chapters)
-"003" %i9s% "0033"
+"494" %i9s% "4941"
 
 "10099" %i9sa% "10101"
 "V10" %i9da% "V10.02"
@@ -70,8 +67,11 @@ icd9IsValidShort(c("1", "001", "100", "123456", "003.21"))
 # "V10" %i9s% "E800" # throws an error
 
 ## ----rangeanomaly--------------------------------------------------------
-icd9ExpandRangeShort("V100", "V1002", onlyReal = TRUE) # default, equivalent to %i9s%
-icd9ExpandRangeShort("V100", "V1002", onlyReal = FALSE) # V10.0 is not a leaf node, equivalent to %i9sa%
+icd9ExpandRangeShort("4820", "4823") # default, equivalent to %i9s%
+icd9ExpandRangeShort("4820", "4823", onlyReal = FALSE)
+# see the first few differences (which are by definition not 'real' codes):
+setdiff(icd9ExpandRangeShort("4820", "4823", onlyReal = FALSE),
+        icd9ExpandRangeShort("4820", "4823")) %>% head
 
 ## ----"childrenReal"------------------------------------------------------
 icd9Children("391")
@@ -79,6 +79,8 @@ icd9Children("391")
 icd9Children("0032")
 # leaf node has no children
 icd9Children("00321")
+# pneumococcal pneumonia is a three-digit code with no descendants
+icd9Children("481")
 
 ## ----"childrenAll"-------------------------------------------------------
 # first ten possible ICD-9 child codes from 391
@@ -164,14 +166,6 @@ icd9Hierarchy[
 ## ----cardiacChainExplainExample------------------------------------------
 cardiac %>% icd9Explain(warn = FALSE) %>% head(10)
 
-## ----speed, cache = TRUE-------------------------------------------------
-# codes selected from AHRQ mapping
-many_patients <- icd9:::randomPatients(100000) 
-
-system.time(
-  icd9ComorbidAhrq(many_patients)
-  )[["elapsed"]] # result in seconds
-
 ## ----"arbitraryMapping"--------------------------------------------------
 names(icd9Chapters)[c(1:5, 14)]
 myMap <- icd9:::icd9ChaptersToMap(icd9Chapters[c(2, 5, 14)])
@@ -181,4 +175,23 @@ icd9Comorbid(patientData, myMap) # no +ve
 ahrqStrict <- lapply(ahrqComorbid, icd9GetReal)
 str(ahrqComorbid[1:5]) # first five of the original:
 str(ahrqStrict[1:5]) # and first five of the result:
+
+## ----"find three digit billable"-----------------------------------------
+allreal <- icd9::icd9Hierarchy[["icd9"]]
+# select the non-V and non-E codes with three characters (zeroes already prefixed)
+threedigitreal <- allreal[nchar(allreal) == 3 & icd9IsN(allreal)]
+# display
+threedigitdf <- data.frame(icd9 = threedigitreal,  description = icd9Explain(threedigitreal))
+print(threedigitdf[1:10, ], row.names = FALSE)
+
+## ----"compare ICD-9 versions"--------------------------------------------
+new_since_27 <- setdiff(icd9Billable[["32"]][["icd9"]],
+                         icd9Billable[["27"]][["icd9"]]) %>% head
+lost_since_27 <- setdiff(icd9Billable[["27"]][["icd9"]],
+                         icd9Billable[["32"]][["icd9"]]) %>% tail
+
+# these are a few which were gained since v27
+data.frame(icd9 = new_since_27, desc = new_since_27 %>% icd9Explain)
+# these are a few which were lost since v27
+data.frame(icd9 = lost_since_27, desc = lost_since_27 %>% icd9Explain)
 

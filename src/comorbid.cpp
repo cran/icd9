@@ -1,3 +1,20 @@
+// Copyright (C) 2014 - 2015  Jack O. Wasey
+//
+// This file is part of icd9.
+//
+// icd9 is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// icd9 is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with icd9. If not, see <http://www.gnu.org/licenses/>.
+
 // [[Rcpp::interfaces(r, cpp)]]
 // [[Rcpp::plugins(openmp)]]
 
@@ -16,8 +33,7 @@ using namespace Rcpp;
 //' @keywords internal
 // [[Rcpp::export]]
 SEXP icd9ComorbidShortCpp(const SEXP& icd9df, const List& icd9Mapping,
-		const std::string visitId = "visitId", const std::string icd9Field =
-				"icd9", const int threads = 8, const int chunkSize = 256,
+		const std::string visitId, const std::string icd9Field, const int threads = 8, const int chunkSize = 256,
 		const int ompChunkSize = 1, bool aggregate = true) {
 #ifdef ICD9_VALGRIND
 	CALLGRIND_START_INSTRUMENTATION;
@@ -44,7 +60,7 @@ SEXP icd9ComorbidShortCpp(const SEXP& icd9df, const List& icd9Mapping,
 #endif
 #endif
 
-	VecStr out_row_names; // TODO: Reserve size
+	VecStr out_row_names; // size is reserved in buildVisitCodesVec
 #ifdef ICD9_DEBUG_SETUP
 	Rcpp::Rcout << "building visit:codes structure\n";
 #endif
@@ -56,14 +72,13 @@ SEXP icd9ComorbidShortCpp(const SEXP& icd9df, const List& icd9Mapping,
 	Rcpp::Rcout << "type of vsexp = " << TYPEOF(vsexp) << "\n";
 #endif
 	if (TYPEOF(vsexp) != STRSXP)
-		Rf_error("expecting vsexp to be character vector");
+		Rcpp::stop("expecting vsexp to be character vector");
 	UNPROTECT(1); // vsexp not used further
 
 #ifdef ICD9_DEBUG_SETUP
 	Rcpp::Rcout << "icd9ComorbidShortMatrix STRSXP\n";
 #endif
-	buildVisitCodesVec(icd9df, visitId, icd9Field, vcdb, out_row_names,
-			aggregate);
+	buildVisitCodesVec(icd9df, visitId, icd9Field, vcdb, out_row_names, aggregate);
 
 #ifdef ICD9_DEBUG_SETUP
 	Rcpp::Rcout << "building icd9Mapping\n";
@@ -97,22 +112,19 @@ SEXP icd9ComorbidShortCpp(const SEXP& icd9df, const List& icd9Mapping,
 	printIt(out);
 	Rcpp::Rcout << "printed\n";
 #endif
-	//IntegerVector mat_out = wrap(out); // matrix is just a vector with dimensions (and col major...) // please don't copy data!
-	// TODO: the above line segfaults consistently with some input, e.g. 2e6 rows on linux. Need to manually convert int to logical?
-
 	// try cast to logical first. (in which case I can use char for Out)
 	std::vector<bool> intermed;
 	intermed.assign(out.begin(), out.end());
 #ifdef ICD9_DEBUG
-	Rcpp::Rcout << "static_cast to vec bool completed\n";
+	Rcpp::Rcout << "converted from ComorbidOut to vec bool, so Rcpp can handle cast to R logical vector\n";
 #endif
-	LogicalVector mat_out = wrap(intermed); // matrix is just a vector with dimensions (and col major...) // please don't copy data!
+	LogicalVector mat_out = wrap(intermed); // matrix is just a vector with dimensions (and col major...) Hope this isn't a data copy.
 #ifdef ICD9_DEBUG
 			Rcpp::Rcout << "wrapped out\n";
 #endif
 	mat_out.attr("dim") = Dimension((int) num_comorbid, (int) num_visits); // set dimensions in reverse (row major for parallel step)
 	mat_out.attr("dimnames") = List::create(icd9Mapping.names(), out_row_names);
-	//mat_out.attr("class") = "matrix";
+	// apparently don't need to set class as matrix here
 	Function t("t"); // use R transpose - seems pretty fast
 #ifdef ICD9_DEBUG
 			Rcpp::Rcout << "Ready to transpose and return\n";

@@ -1,9 +1,19 @@
-/*
- * local.h
- *
- *  Created on: Mar 7, 2015
- *      Author: jack
- */
+// Copyright (C) 2014 - 2015  Jack O. Wasey
+//
+// This file is part of icd9.
+//
+// icd9 is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// icd9 is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with icd9. If not, see <http://www.gnu.org/licenses/>.
 
 #ifndef LOCAL_H_
 #define LOCAL_H_
@@ -16,7 +26,8 @@
 //#include <algorithm>
 #include <vector>
 #include <set>
-#include <tr1/unordered_map>
+
+#include "config.h"
 
 extern "C" {
 #include "cutil.h"
@@ -35,7 +46,6 @@ extern "C" {
 #define ICD9_OPENMP
 #endif
 
-// enable linux performance counting
 #ifdef ICD9_VALGRIND
 #include <valgrind/callgrind.h>
 #endif
@@ -44,13 +54,22 @@ typedef std::string Str;
 typedef std::vector<Str> VecStr;
 
 typedef std::vector<int> VecInt;
-typedef std::vector<char> ComorbidOut; // TODO: someday benchmark int vs char (or possibly Boost bitset)
-// vector<bool> dangerous with multiple threads, and note that char doesn't cast to bool with Rcpp
+typedef std::vector<char> ComorbidOut;
+// this could be int ( which works around Rcpp bug which can't cast vector<char>
+// to LogicalVector). Will need to benchmark. vector<bool> dangerous with
+// multiple threads
 
 typedef std::vector<VecStr> VecVecStr;
 typedef std::vector<VecInt> VecVecInt;
 typedef VecVecInt::size_type VecVecIntSz;
-typedef std::tr1::unordered_map<std::string, VecInt::size_type> VisLk;
+
+// use flag set by configure
+#ifdef HAVE_CXX11
+#include <unordered_map>
+typedef std::unordered_map<std::string, VecInt::size_type> VisLk;
+#else
+typedef std::map<std::string, VecInt::size_type> VisLk;
+#endif
 
 void buildMap(const Rcpp::List& icd9Mapping, VecVecInt& map);
 void buildVisitCodesVec(const SEXP& icd9df, const std::string& visitId,

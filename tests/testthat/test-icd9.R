@@ -1,3 +1,28 @@
+# Copyright (C) 2014 - 2015  Jack O. Wasey
+#
+# This file is part of icd9.
+#
+# icd9 is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# icd9 is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with icd9. If not, see <http:#www.gnu.org/licenses/>.
+
+if (requireNamespace("lintr", quietly = TRUE)) {
+  context("lints")
+  test_that("Package Style", {
+    skip("skipping linting until lintr bugs are fixed")
+    lintr::expect_lint_free()
+  })
+}
+
 context("test icd9 package")
 
 test_that("zero pad decimal - bad input", {
@@ -105,8 +130,7 @@ test_that("add leading zeroes to majors, invalid input", {
   expect_equal(icd9AddLeadingZeroesMajor("E"), NA_character_)
   expect_equal(icd9AddLeadingZeroesMajor("V"), NA_character_)
   expect_equal(icd9AddLeadingZeroesMajor("jasmine"), NA_character_)
-  # minimal validation of major, should just give back E codes.
-  # expect_equal(icd9AddLeadingZeroesMajor("E9"), "E9")
+  expect_equal(icd9AddLeadingZeroesMajor("E9"), "E009")
 })
 
 test_that("all generated icd9 lookup tables are valid!", {
@@ -124,10 +148,9 @@ test_that("icd9ExtractAlphaNumeric", {
 
 test_that("strip leading zeroes: errors", {
 
-  #TODO: decide whether to validate these, and make NAs, or just produce garbage.
-  #expect_equal(icd9DropLeadingZeroesDecimal("sandwiches"), NA_character_)
-  #expect_equal(icd9DropLeadingZeroesDecimal("VE123456.789"), NA_character_)
-  #expect_equal(icd9DropLeadingZeroesDecimal("V10.1,E989.2"), NA_character_)
+  expect_equal(icd9DropLeadingZeroesDecimal(NA_character_), NA_character_)
+  # no guaranteed behaviour when code is invalid: it may or may not match the
+  # regex. If the user wants to get the valid codes first, they can do that.
 })
 
 test_that("strip leading zero from decimal numeric only", {
@@ -163,8 +186,8 @@ test_that("strip leading zero from decimal V and E", {
 
   expect_equal(icd9DropLeadingZeroesDecimal("V1"), "V1")
   expect_equal(icd9DropLeadingZeroesDecimal("V01"), "V1")
-  #TODO: expect_equal(icd9DropLeadingZeroesDecimal("V1."), "V1")
-  #TODO: expect_equal(icd9DropLeadingZeroesDecimal("V01."), "V1")
+  expect_equal(icd9DropLeadingZeroesDecimal("V1."), "V1.")
+  expect_equal(icd9DropLeadingZeroesDecimal("V01."), "V1.")
   expect_equal(icd9DropLeadingZeroesDecimal("V12"), "V12")
   expect_equal(icd9DropLeadingZeroesDecimal("V12.3"), "V12.3")
   expect_equal(icd9DropLeadingZeroesDecimal("V1.2"), "V1.2")
@@ -181,7 +204,10 @@ test_that("strip leading zero from decimal V and E", {
 
 test_that("strip leading zero from short numeric only", {
 
-  # TODO: expect_equal(icd9DropLeadingZeroesShort(NA_character_), NA_character_)
+  expect_equal(icd9DropLeadingZeroesShort(NA_character_), NA_character_)
+  expect_equal(icd9DropLeadingZeroesShort("010"), "10")
+  expect_equal(icd9DropLeadingZeroesShort("009"), "9")
+
   # must have zero to be valid (001.2)
   expect_equal(icd9DropLeadingZeroesShort("0012"), "0012")
   # must have zero to be valid (001.23)
@@ -198,7 +224,7 @@ test_that("strip leading zero from short numeric only", {
 
 test_that("strip leading zero from decimal V and E", {
 
-  expect_equal(icd9DropLeadingZeroesShort("V1"), "V01")
+  expect_equal(icd9DropLeadingZeroesShort("V1"), "V1")
   expect_equal(icd9DropLeadingZeroesShort("V12"), "V12")
   expect_equal(icd9DropLeadingZeroesShort("V123"), "V123")
   # cannot drop zero and be the same code. This is an important test!
@@ -208,23 +234,19 @@ test_that("strip leading zero from decimal V and E", {
   expect_equal(icd9DropLeadingZeroesShort("E9127"), "E9127")
 
   test_that("mixed vector drop leading zero short", {
-    expect_equal(icd9DropLeadingZeroesShort(c("V1278", " E898", "02", "0345")),
-                 c("V1278", "E898", "002", "0345"))
+    expect_equal(
+      icd9DropLeadingZeroesShort(c("V1278", " E898", "02", "0345")),
+      c("V1278", "E898", "2", "0345"))
   })
 })
 
 test_that("drop leading zeroes from majors: invalid input", {
   # this is a little dangerous. dropping zeroes from a major is only valid for
   # short codes if the minor is empty, but this function is unaware of this.
-  # TODO expect_equal(icd9DropLeadingZeroesMajor(""), NA_character_)
+  expect_equal(icd9DropLeadingZeroesMajor(""), "")
   expect_true(is.na(icd9DropLeadingZeroesMajor(NA_character_)))
   expect_true(is.na(icd9DropLeadingZeroesMajor(NA)))
-  #   expect_error(icd9DropLeadingZeroesMajor("54321"))
-  #   expect_error(icd9DropLeadingZeroesMajor(1.5))
-  #   expect_error(icd9DropLeadingZeroesMajor(pi))
-  #   expect_error(icd9DropLeadingZeroesMajor("V10.20"))
-  #   expect_error(icd9DropLeadingZeroesMajor("E9127"))
-  #   expect_error(icd9DropLeadingZeroesMajor("rhubarb"))
+  # dropping leading zeroes from an invalid code is undefined, so no tests.
 })
 
 test_that("drop leading zeroes from majors: numeric input", {
@@ -242,9 +264,14 @@ test_that("drop leading zeroes from majors: numeric input", {
 
 test_that("drop leading zeroes from majors: V codes", {
   expect_equal(icd9DropLeadingZeroesMajor("V1"), "V1")
-  #TODO: expect_equal(icd9DropLeadingZeroesMajor(" v01 "), "V1")
   expect_equal(icd9DropLeadingZeroesMajor("V01"), "V1")
-  expect_equal(icd9DropLeadingZeroesMajor("V12"), "V12")
+  expect_equal(icd9DropLeadingZeroesMajor(" V12"), "V12")
+})
+
+test_that("drop leading zeroes from majors: V codes preserves lower case v", {
+  # no strong reason to force this, but seems reasonable
+  expect_equal(icd9DropLeadingZeroesMajor(" v01 "), "v1")
+  expect_equal(icd9DropLeadingZeroesMajor(" v9 "), "v9")
 })
 
 test_that("drop leading zeroes from majors: E codes", {

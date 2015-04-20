@@ -1,3 +1,19 @@
+# Copyright (C) 2014 - 2015  Jack O. Wasey
+#
+# This file is part of icd9.
+#
+# icd9 is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# icd9 is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with icd9. If not, see <http:#www.gnu.org/licenses/>.
 
 #' @title Calculate Charlson Comorbidity Index (Charlson Score)
 #' @rdname icd9Charlson
@@ -5,7 +21,7 @@
 #'   of Deyo's ICD-9 mapping. (Peptic Ulcer disease no longer warrants a point.)
 #'   Quan published an updated set of scores, but it seems most people use the
 #'   original scores for easier comaprison between studies, even though Quan's
-#'   were more predictive. TODO: add Quan Charlson score calculation.
+#'   were more predictive.
 #' @details Per Quan, "The following comorbid conditions were mutually
 #'   exclusive: diabetes with chronic complications and diabetes without chronic
 #'   complications; mild liver disease and moderate or severe liver disease; and
@@ -47,15 +63,13 @@ icd9Charlson.data.frame <- function(x, visitId = NULL,
                                     return.df = FALSE,
                                     stringsAsFactors = getOption("stringsAsFactors"),
                                     ...) {
-  checkmate::assertDataFrame(x, min.rows = 0, min.cols = 2, col.names = "named")
-  checkmate::assertFlag(return.df)
+  assertDataFrame(x, min.rows = 0, min.cols = 2, col.names = "named")
+  assertFlag(return.df)
   visitId <- getVisitId(x, visitId)
   tmp <- icd9ComorbidQuanDeyo(x, visitId, applyHierarchy = TRUE,
                               return.df = TRUE, ...)
   res <- icd9CharlsonComorbid(tmp, visitId = visitId, applyHierarchy = FALSE)
 
-  # TODO someday it might be nice (like with comorbid.R) to recreate a factor
-  # with the same levels for visitId if this is what is given to us.
   if (!return.df) return(res)
   out <- cbind(names(res),
                data.frame("Charlson" = unname(res)),
@@ -102,7 +116,6 @@ icd9CharlsonComorbid <- function(x, visitId = NULL, applyHierarchy = FALSE) {
 #'   The visitId field is typically the first column. If there is no column
 #'   called \code{visitId} and \code{visitId} is not specified, the first column
 #'   is used.
-#' @details TODO: optionally check each code is valid before counting.
 #' @param x data frame with one row per patient, and a true/false or 1/0 flag
 #'   for each column. By default, the first column is the patient identifier and
 #'   is not counted. If \code{visitId} is not specified, the first column is
@@ -179,8 +192,8 @@ icd9CountWide <- function(x,
                           return.df = FALSE,
                           aggregate = FALSE) {
   visitId <- getVisitId(x, visitId)
-  checkmate::assertFlag(return.df)
-  checkmate::assertFlag(aggregate)
+  assertFlag(return.df)
+  assertFlag(aggregate)
 
   res <- apply(x[names(x) %nin% visitId], 1, function(x) sum(!is.na(x)))
   names(res) <- x[[visitId]]
@@ -196,4 +209,98 @@ icd9CountWide <- function(x,
   vec <- rdfagg[["count"]]
   names(vec) <- rdfagg[[visitId]]
   vec
+}
+
+#' @title Calculate van Walraven Elixhauser Score
+#' @rdname icd9VanWalraven
+#' @description van Walraven Elixhauser score is calculated from the Quan
+#'   revision of Elixhauser's ICD-9 mapping. This function allows for the
+#'   hierarchical exlusion of less severe versions of comorbidities when their
+#'   more severe version is also present via the applyHeirarchy argument. For
+#'   the Elixhauser comorbidities, this is diabetes v. complex diabetes and
+#'   solid tumor v. metastatic tumor
+#' @param x data frame containing a column of visit or patient identifiers, and
+#'   a column of ICD-9 codes. It may have other columns which will be ignored.
+#'   By default, the first column is the patient identifier and is not counted.
+#'   If \code{visitId} is not specified, the first column is used.
+#' @template visitid
+#' @param return.df single logical value, if true, a two column data frame will
+#'   be returned, with the first column named as in input data frame (i.e.
+#'   \code{visitId}), containing all the visits, and the second column
+#'   containing the Charlson Comorbidity Index.
+#' @param stringsAsFactors single logical, passed on when constructing
+#'   data.frame if \code{return.df} is \code{TRUE}. If the input data frame
+#'   \code{x} has a factor for the visitId, this is not changed, but a
+#'   non-factor visitId may be converted or not converted according to your
+#'   system default or this setting.
+#' @param ... further arguments to pass on to \code{icd9ComorbidQuanElix}, e.g.
+#'   \code{icd9Field}, \code{applyHeirarchy}
+#' @examples
+#' mydf <- data.frame(visitId = c("a", "b", "c"),
+#'                    icd9 = c("412.93", "441", "044.9"))
+#'
+#' print(
+#'   cmb <- icd9ComorbidQuanElix(mydf, isShort = FALSE, applyHierarchy = TRUE, return.df=TRUE)
+#' )
+#' icd9VanWalravenComorbid(cmb)
+#'
+#' icd9VanWalraven(mydf)
+#' icd9VanWalraven(mydf, return.df = TRUE)
+#' @author wmurphyrd
+#' @references van Walraven C, Austin PC, Jennings A, Quan H, Forster AJ. A
+#'   Modification to the Elixhauser Comorbidity Measures Into a Point System for
+#'   Hospital Death Using Administrative Data. Med Care. 2009; 47(6):626-633.
+#'   \url{http://www.ncbi.nlm.nih.gov/pubmed/19433995}
+#' @export
+icd9VanWalraven <- function(x, visitId = NULL,
+                            return.df = FALSE,
+                            stringsAsFactors = getOption("stringsAsFactors"),
+                            ...)
+  UseMethod("icd9VanWalraven")
+
+#' @describeIn icd9VanWalraven van Walraven scores from data frame of visits and ICD-9 codes
+#' @export
+icd9VanWalraven.data.frame <- function(x, visitId = NULL,
+                                       return.df = FALSE,
+                                       stringsAsFactors = getOption("stringsAsFactors"),
+                                       ...) {
+  assertDataFrame(x, min.rows = 0, min.cols = 2, col.names = "named")
+  assertFlag(return.df)
+  visitId <- getVisitId(x, visitId)
+  tmp <- icd9ComorbidQuanElix(x, visitId, applyHierarchy = TRUE,
+                              return.df = TRUE, ...)
+  res <- icd9VanWalravenComorbid(tmp, visitId = visitId, applyHierarchy = FALSE)
+
+  if (!return.df) return(res)
+  out <- cbind(names(res),
+               data.frame("vanWalraven" = unname(res)),
+               stringsAsFactors = stringsAsFactors)
+  names(out)[1] <- visitId
+  out
+}
+
+#' @rdname icd9VanWalraven
+#' @param applyHierarchy single logical value, default is \code{FALSE}. If
+#'   \code{TRUE}, will drop DM if DMcx is present, etc.
+#' @export
+icd9VanWalravenComorbid <- function(x, visitId = NULL, applyHierarchy = FALSE) {
+  stopifnot(is.data.frame(x) || is.matrix(x))
+  stopifnot(ncol(x) - is.data.frame(x) == 30)
+  weights <- c(7, 5, -1, 4, 2, 0, 7, 6, 3, 0, 0, 0, 5, 11, 0, 0,
+               9, 12, 4, 0, 3, -4, 6, 5, -2, -2, 0, -7, 0, -3)
+
+  if (applyHierarchy) {
+    x[,"DM"] <- x[, "DM"] & !x[, "DMcx"]
+    x[, "Tumor"] <- x[, "Tumor"] & !x[, "Mets"]
+  } else {
+    stopifnot(!any(x[, "DM"] & x[, "DMcx"]))
+    stopifnot(!any(x[, "Tumor"] & x[, "Mets"]))
+  }
+  if (is.data.frame(x)) {
+    visitId <- getVisitId(x, visitId)
+    visitIdNames <- x[[visitId]]
+    x <- as.matrix(x[, names(x) %nin% visitId])
+    rownames(x) <- visitIdNames
+  }
+  rowSums(t(t(x) * weights))
 }

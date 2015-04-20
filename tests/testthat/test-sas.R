@@ -1,3 +1,20 @@
+# Copyright (C) 2014 - 2015  Jack O. Wasey
+#
+# This file is part of icd9.
+#
+# icd9 is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# icd9 is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with icd9. If not, see <http:#www.gnu.org/licenses/>.
+
 context("test SAS interpretation")
 
 test_that("basic SAS VALUE declarations can be read into an R list", {
@@ -27,7 +44,7 @@ test_that("basic SAS VALUE declarations can be read into an R list", {
     'VALUE $RFRMSOMETHING 100-102 = "HTN" 103,104 = "CHF";\n',
     ' VALUE otherstuff 105 = "YES"'))
   expect_equal(result, list("$RFRMSOMETHING" = list(HTN = "100-102",
-                                                    CHF=c("103", "104")),
+                                                    CHF = c("103", "104")),
                             otherstuff = list("YES" = "105")))
 
   result <- sasFormatExtract(c(
@@ -36,18 +53,7 @@ test_that("basic SAS VALUE declarations can be read into an R list", {
   expect_equal(result, list("$RFRMSOMETHING" = list(HTN = "100-102",
                                                     CHF = c("103", "104")),
                             otherstuff = list("YES" = "105")))
-
-  # make sure it tolerates lack of whitespace...
-
-
-  # print(getwd()) # we're in the testthat directory, at least when running this
-  # code with test_file
-
-  # sasTxt <- readLines('inst/extdata//comformat2012-2013.txt')
-
 })
-
-#test_that("proc format opening is understood", {})
 
 test_that("groups of SAS assignments can be extracted", {
 

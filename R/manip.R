@@ -1,3 +1,20 @@
+# Copyright (C) 2014 - 2015  Jack O. Wasey
+#
+# This file is part of icd9.
+#
+# icd9 is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# icd9 is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with icd9. If not, see <http:#www.gnu.org/licenses/>.
+
 #' @title extract alphabetic, and numeric part of icd9 code prefix
 #' @description removes whitespace and separates V or E if present.
 #' @template icd9-any
@@ -22,8 +39,11 @@ icd9ExtractAlphaNumeric <- function(icd9) {
 #' @title drop zero padding from decimal ICD-9 code.
 #' @description decimal form ICD-9 codes are not ambiguous if the leading zeroes
 #'   are dropped. Some short-form ICD-9 codes would not be ambiguous, e.g. "1"
-#'   but many would be problematic, so no function is provided to do this for
-#'   short-form codes. This is the inverse of icd9AddLeadingZeroesDecimal
+#'   but many would be problematic. This is the inverse of
+#'   \code{icd9AddLeadingZeroesDecimal}.
+#'
+#'   Invalid codes have no guaranteed result, and may give NA, or a (possibly
+#'   valid) code in repsonse.
 #' @template icd9-any
 #' @return character vector of ICD-9 codes with extra zeroes dropped from major
 #'   part
@@ -31,7 +51,7 @@ icd9ExtractAlphaNumeric <- function(icd9) {
 #' @keywords internal manip
 icd9DropLeadingZeroes <- function(icd9, isShort) {
   assertFactorOrCharacter(icd9)
-  checkmate::assertFlag(isShort)
+  assertFlag(isShort)
   if (isShort) return(
     icd9DropLeadingZeroesShort(icd9Short = icd9))
   icd9DropLeadingZeroesDecimal(icd9Decimal = icd9)
@@ -45,9 +65,8 @@ icd9DropLeadingZeroesDecimal <- function(icd9Decimal) {
     X = strMultiMatch(
       pattern = "[[:space:]]*([EeVv]?)(0*)([\\.[:digit:]]+)[[:space:]]*",
       text = icd9Decimal),
-    FUN = function(x)
-      if (length(x) > 0) sprintf("%s%s", x[1], x[3]) else NA_character_ ,
-    FUN.VALUE = character(1) # template result PER vapply 'row'
+    FUN = function(x) if (length(x) > 0) sprintf("%s%s", x[1], x[3]) else NA_character_ ,
+    FUN.VALUE = character(1)
   )
   out
 }
@@ -59,16 +78,17 @@ icd9DropLeadingZeroesShort <- function(icd9Short) {
   parts <- icd9ShortToParts(icd9Short = icd9Short, minorEmpty = "")
   # very important: only drop the zero in V codes if the minor part is empty.
   areEmpty <- parts[["minor"]] == ""
-  parts[areEmpty, "major"] <- icd9DropLeadingZeroesMajor(parts[areEmpty, "major"])
-  icd9PartsToShort(parts)
+
+  icd9Short[areEmpty] <- icd9DropLeadingZeroesMajor(parts[areEmpty, "major"])
+  icd9Short
 }
 
 #' @rdname icd9DropLeadingZeroes
 icd9DropLeadingZeroesMajor <- function(major) {
+  # (valid) E codes don't ever have leading zeroes
   # major can legitimately be an integer
-  major <- trim(major)
+  major <- trim(major) # my trim loses encoding, but this shouldn't matter
   isV <- icd9IsV(major) # not checking validity, necessarily, just quick check
-  # alternative might be just to get numeric-only, possibly quicker? TODO
   isN <- icd9IsValidMajorN(major)
   major[isV] <- sub(pattern = "^([Vv])0([[:digit:]]{1})$",
                     replacement = "\\1\\2",

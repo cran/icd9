@@ -1,3 +1,20 @@
+// Copyright (C) 2014 - 2015  Jack O. Wasey
+//
+// This file is part of icd9.
+//
+// icd9 is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// icd9 is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with icd9. If not, see <http://www.gnu.org/licenses/>.
+
 // [[Rcpp::interfaces(r, cpp)]]
 // [[Rcpp::plugins(openmp)]]
 #include <local.h>
@@ -14,7 +31,6 @@ void lookupOneChunk(const VecVecInt& vcdb, const VecVecInt& map,
 	const ComorbidOut falseComorbidChunk(num_comorbid * (1 + end - begin),
 			false);
 	chunk = falseComorbidChunk;
-	// TODO: someday try looping through comorbidities in outside loop instead of inner loop.
 	for (VecVecIntSz urow = begin; urow <= end; ++urow) { //end is index of end of chunk, so we include it in the loop.
 #ifdef ICD9_DEBUG_TRACE
 			Rcpp::Rcout << "lookupComorbidRangeOpenMP row: " << 1+urow-begin << " of " << 1+end-begin << "\n";

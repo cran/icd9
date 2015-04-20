@@ -1,3 +1,20 @@
+# Copyright (C) 2014 - 2015  Jack O. Wasey
+#
+# This file is part of icd9.
+#
+# icd9 is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# icd9 is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with icd9. If not, see <http:#www.gnu.org/licenses/>.
+
 # EXCLUDE COVERAGE START
 
 getSlowestTests <- function(n = 5) {
@@ -238,7 +255,6 @@ icd9Benchmark <- function() {
   Rprof(filename = tmp, line.profiling = TRUE, memory.profiling = TRUE)
   capture.output(icd9ComorbidAhrq(rpts, isShort = TRUE))
   Rprof(NULL)
-  #summaryRprof(filename = tmp, memory = "stats", lines = "both")
   summaryRprof(filename = tmp, memory = "both", lines = "show")
 
   # see how we do scaling up:
@@ -275,23 +291,14 @@ icd9Benchmark <- function() {
   ggplot2::ggsave("tmpggplot.jpg", width = 250, height=5, dpi=200, limitsize = FALSE)
 
   microbenchmark::microbenchmark(times = 500, # initial about 2ms
-                                 icd9AddLeadingZeroesMajor(major = c(1 %i9mj% 999, paste("V", 1:9, sep=""))))
+                                 icd9AddLeadingZeroesMajor(major = c(1 %i9mj% 999, paste("V", 1:9, sep = ""))))
 
   microbenchmark::microbenchmark(times = 500, # initial about 2ms
-                                 icd9AddLeadingZeroesMajor(major = c(1 %i9mj% 999, paste("V", 1:9, sep=""))))
-
-  # 3.5 sec in v0.5, 2.7 sec without validation checks
-  #microbenchmark::microbenchmark(times = 5, icd9ChildrenShort_R("400" %i9s% "450"))
-
+                                 icd9AddLeadingZeroesMajor(major = c(1 %i9mj% 999, paste("V", 1:9, sep = ""))))
 
   #sprintf wins
   microbenchmark::microbenchmark(times = 500000, sprintf("%s%s", "410", "01"))
   microbenchmark::microbenchmark(times = 500000, paste("410", "01", sep = ""))
-
-  #microbenchmark::microbenchmark(times = 10, icd9ShortToParts(randomShortIcd9(5E+5)))
-  #microbenchmark::microbenchmark(times = 10, icd9ShortToPartsSlow(randomShortIcd9(5E+5)))
-  #microbenchmark::microbenchmark(times = 10, icd9ShortToPartsList(randomShortIcd9(5E+5)))
-
   microbenchmark::microbenchmark(times = 50, trim(randomShortIcd9))
   microbenchmark::microbenchmark(times = 50, strip(randomShortIcd9))
 

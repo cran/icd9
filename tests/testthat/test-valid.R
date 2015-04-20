@@ -1,3 +1,20 @@
+# Copyright (C) 2014 - 2015  Jack O. Wasey
+#
+# This file is part of icd9.
+#
+# icd9 is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# icd9 is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with icd9. If not, see <http:#www.gnu.org/licenses/>.
+
 context("icd9 validation")
 
 test_that("warning for deprecation of icd9ValidDecimal", {
@@ -12,9 +29,8 @@ test_that("icd9IsValidDecimal - rubbish input", {
   expect_equal(icd9IsValidDecimal(character()), logical())
   expect_false(icd9IsValidDecimal("."))
   expect_equal(icd9IsValidDecimal(c("100", "chestnut")), c(TRUE, FALSE))
-  #expect_warning(naVal <- icd9IsValidDecimal("100, 200")) # note this is a string
-  #with two numbers in it... TODO? could warn if any commas or other separators.
-  #expect_equal(naVal, NA)
+  expect_false(icd9IsValidDecimal("100, 200")) # note this is a string with two numbers in it.
+  expect_false(icd9IsValidDecimal(NA_character_))
   expect_equal(icd9IsValidDecimal(c("two", "things")), c(FALSE, FALSE))
 })
 
@@ -154,7 +170,6 @@ test_that("icd9IsValidDecimal valid E codes", {
 test_that("icd9IsValidShort", {
   expect_equal(icd9IsValidShort(character()), logical())
   expect_error(icd9IsValidShort(list(1230, c(12323, 2323), c("nonesnseses"))))
-  #expect_false(icd9IsValidShort("0"))
   expect_true(icd9IsValidShort("0"))
   expect_equal(
     icd9IsValidShort(c("0", "00", "000", "0000", "00000")),
@@ -176,11 +191,11 @@ test_that("icd9IsValidShort", {
   expect_false(icd9IsValidShort("11.22")) # am not expecting decimal points
 })
 
-# TODO: more V code tests
 test_that("validate short form V codes - invalid codes", {
   expect_false(icd9IsValidShort("V"))
   expect_false(icd9IsValidShort("VV"))
-  expect_false(icd9IsValidShort("V0"))
+  expect_false(icd9IsValidShort("Vbog"))
+  expect_false(icd9IsValidShort(" V0"))
   expect_false(icd9IsValidShort("V00000"))
   expect_false(icd9IsValidShort("V123456"))
 })
@@ -227,7 +242,7 @@ test_that("valid short form E codes - invalid input", {
   expect_false(icd9IsValidShort("E10000.1"))
   expect_false(icd9IsValidShort("E.1"))
   expect_false(icd9IsValidShort("E00000"))
-  #expect_true(icd9IsValidShort("E1234"))
+  expect_true(icd9IsValidShort("E1234"))
   expect_false(icd9IsValidShort("E000.00"))
   expect_false(icd9IsValidShort("E999.12"))
   expect_false(icd9IsValidShort("E099.12"))
@@ -309,8 +324,10 @@ test_that("icd-9 code is really in the list, not just syntactically valid", {
   expect_false(icd9IsReal("V802.7", isShort = FALSE))
 
   expect_equal(icd9IsRealDecimal("V802.7"), FALSE)
-  expect_equal(icd9IsReal(c("8027", "E9329", "E000", "armitage"),
-                          isShort = TRUE), c(TRUE, TRUE, TRUE, FALSE))
+  expect_equal(
+    icd9IsReal(c("8027", "E9329", "E000", "armitage"), isShort = TRUE),
+    c(TRUE, TRUE, TRUE, FALSE)
+    )
 })
 
 mixInvalidPts <- data.frame(
@@ -337,7 +354,7 @@ test_that("get valid - vector input", {
 
 test_that("filter valid - data frame input", {
 
-  expect_equal(icd9FilterValid(mixInvalidPts), mixInvalidPts[c(1,3), ])
+  expect_equal(icd9FilterValid(mixInvalidPts), mixInvalidPts[c(1, 3), ])
 
   expect_equal(icd9FilterInvalid(mixInvalidPts), mixInvalidPts[2, ])
   expect_equal(icd9FilterValid(mixInvalidPts, invert = TRUE),
@@ -354,18 +371,17 @@ test_that("filter valid - data frame input", {
   expect_equal(icd9FilterValid(mixInvalidPts, isShort = TRUE, invert = TRUE),
                mixInvalidPts[2, ])
   expect_equal(icd9FilterValid(mixInvalidPts, isShort = TRUE, invert = FALSE),
-               mixInvalidPts[c(1,3), ])
+               mixInvalidPts[c(1, 3 ), ])
 })
 
 test_that("validate mappings", {
-  # TODO: check all real, also?
-  expect_true(icd9IsValidMappingDecimal(list(a="100.1", b="202.3")))
-  expect_true(icd9IsValidMappingShort(list(a="1001", b="2023")))
-  expect_false(icd9IsValidMappingDecimal(list(a="1001", b="2023")))
-  expect_false(icd9IsValidMappingShort(list(a="100.1", b="202.3")))
+  expect_true(icd9IsValidMappingDecimal(list(a = "100.1", b = "202.3")))
+  expect_true(icd9IsValidMappingShort(list(a = "1001", b = "2023")))
+  expect_false(icd9IsValidMappingDecimal(list(a = "1001", b = "2023")))
+  expect_false(icd9IsValidMappingShort(list(a = "100.1", b = "202.3")))
 
-  expect_false(icd9IsValidMapping(list(a="car", b="et"), isShort = FALSE))
-  expect_true(icd9IsValidMapping(list(a="1001", b="2023"), isShort = TRUE))
+  expect_false(icd9IsValidMapping(list(a = "car", b = "et"), isShort = FALSE))
+  expect_true(icd9IsValidMapping(list(a = "1001", b = "2023"), isShort = TRUE))
 })
 
 test_that("get invalid decimals", {
@@ -373,6 +389,17 @@ test_that("get invalid decimals", {
 })
 
 test_that("get real codes from a longer list", {
-  expect_equal(icd9GetRealShort(c("003", "0031", "0032"), majorOk = FALSE), "0031")
-  expect_equal(icd9GetRealDecimal(c("003", "003.1", "3.2"), majorOk = FALSE), "003.1")
+  expect_equal(icd9GetRealShort(c("003", "0031", "0032"), onlyBillable = TRUE), "0031")
+  expect_equal(icd9GetRealDecimal(c("003", "003.1", "3.2"), onlyBillable = TRUE), "003.1")
+})
+
+test_that("get real codes which are less than two digit major", {
+  expect_equal(icd9GetRealShort(c("3", "11", "V2"), onlyBillable = FALSE), c("3", "11", "V2"))
+  expect_equal(icd9GetRealDecimal(c("3", "11", "V2"), onlyBillable = FALSE), c("3", "11", "V2"))
+}
+          )
+test_that("illable codes are identified", {
+  expect_true(icd9IsBillable("1000"))
+  expect_false(icd9IsBillable("1008"))
+  expect_true(icd9IsBillable("1009"))
 })

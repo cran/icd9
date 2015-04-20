@@ -18,6 +18,7 @@ suppressWarnings({
     #library(knitr, warn.conflicts = FALSE) # for opts_chunk only
     library(icd9)
     library(magrittr)
+    library(xtable)
     })
   })
 
@@ -51,11 +52,7 @@ patientData
 ```
 or
 ```{r showdatwide,echo=FALSE}
-oldsaf <- options("stringsAsFactors" = FALSE)
-pd2 <- patientData %>% icd9LongToWide
-options(oldsaf)
-pd2[is.na(pd2)] <- ""
-pd2
+head(vermont_dx[c(1, 6:15)])
 ```
 Of course, in real life, there are many problems with the data, such is `NA` entries, out-of-order `visitId`s, non-existent or invalid ICD-9 codes, etc.. Tools are provided to clean up the mess, and discover the comorbidities before admission or after discharge for these patients (or simply for any list of patients and ICD-9 codes: there is no requirement to work in the hospital admission paradigm.) The optional `poa` field indicates whether the code was determined to be *present on arrival*. The implicit default is to ignore it, and give ICD-9 code regardless of POA status, but filtering functions are provided and demonstrated later in this vignette.
 
@@ -103,7 +100,7 @@ These functions generate syntactically valid ICD-9 codes, without including pare
 # get all possible codes
 "003" %i9sa% "0033" %>% head(9) # show first 9 of 111 values
 # just get the ones which correspond to diagnoses (keeping the 3-digit chapters)
-"003" %i9s% "0033"
+"494" %i9s% "4941"
 
 "10099" %i9sa% "10101"
 "V10" %i9da% "V10.02"
@@ -117,10 +114,12 @@ This is used internally to interpret ranges of ICD-9 codes specified in the lite
 
 Another way of specifying ranges are to use function calls. These are exactly equivalent to the `%i9s%` and `%i9d%` range operators. This example shows the result when the user specifies a range which would include parents but not all their children:
 ```{r rangeanomaly}
-icd9ExpandRangeShort("V100", "V1002", onlyReal = TRUE) # default, equivalent to %i9s%
-icd9ExpandRangeShort("V100", "V1002", onlyReal = FALSE) # V10.0 is not a leaf node, equivalent to %i9sa%
+icd9ExpandRangeShort("4820", "4823") # default, equivalent to %i9s%
+icd9ExpandRangeShort("4820", "4823", onlyReal = FALSE)
+# see the first few differences (which are by definition not 'real' codes):
+setdiff(icd9ExpandRangeShort("4820", "4823", onlyReal = FALSE),
+        icd9ExpandRangeShort("4820", "4823")) %>% head
 ```
-Although `V10.0` would include ten possible children, the range with \code{onlyReal = FALSE} only returns 4 values to avoid the range returning broader classifications than intended (V10.0 would imply all its children).
 
 It is easy to find the children of a higher-level ICD-9 code:
 ```{r "childrenReal"}
@@ -129,6 +128,8 @@ icd9Children("391")
 icd9Children("0032")
 # leaf node has no children
 icd9Children("00321")
+# pneumococcal pneumonia is a three-digit code with no descendants
+icd9Children("481")
 ```
 By adding `onlyReal = TRUE`, all syntactically valid ICD-9 codes are returned, even if not defined by CMS as diagnoses. This is relevant because of minor coding errors, or coding in a different year to the master list. A planned feature is to allow testing of an ICD-9 code against the valid codes for the year it was entered, but at present only the 2014 master list is used. This means that some older valid codes may no longer be on the list. However, there have been very few changes to ICD-9-CM in the last five years with ICD-10-CM in the wings.
 ```{r "childrenAll"}
@@ -290,6 +291,37 @@ str(ahrqComorbid[1:5]) # first five of the original:
 str(ahrqStrict[1:5]) # and first five of the result:
 ```
 Note the much smaller numbers of codes in each group, now we have discarded all the ones which are not defined as diagnoses.
+
+### Which three-character ICD-9 codes have no subcodes
+The ICD-9-CM scheme is structured as follows:
+ - Chapter
+ - Sub-chapter
+ - Major part (3 digit codes)
+ - sub-division (1st decimal place)
+ - sub-sub-division (2nd decimal place)
+ 
+ For most combinations of 0 to 9, nothing is defined. Sometimes, nodes at one level in the hierarchy are descriptive only of their children (branch nodes), whereas some are themselves billable. For this example, let's find those numeric-only codes which have no children, and by implication are themselves directly billable codes. Here are the first ten:
+```{r "find three digit billable"}
+allreal <- icd9::icd9Hierarchy[["icd9"]]
+# select the non-V and non-E codes with three characters (zeroes already prefixed)
+threedigitreal <- allreal[nchar(allreal) == 3 & icd9IsN(allreal)]
+# display
+threedigitdf <- data.frame(icd9 = threedigitreal,  description = icd9Explain(threedigitreal))
+print(threedigitdf[1:10, ], row.names = FALSE)
+```
+
+### Which ICD-9 codes have changed between versions of ICD-9?
+```{r "compare ICD-9 versions"}
+new_since_27 <- setdiff(icd9Billable[["32"]][["icd9"]],
+                         icd9Billable[["27"]][["icd9"]]) %>% head
+lost_since_27 <- setdiff(icd9Billable[["27"]][["icd9"]],
+                         icd9Billable[["32"]][["icd9"]]) %>% tail
+
+# these are a few which were gained since v27
+data.frame(icd9 = new_since_27, desc = new_since_27 %>% icd9Explain)
+# these are a few which were lost since v27
+data.frame(icd9 = lost_since_27, desc = lost_since_27 %>% icd9Explain)
+```
 
 ## Conclusion
 

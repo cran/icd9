@@ -1,3 +1,19 @@
+# Copyright (C) 2014 - 2015  Jack O. Wasey
+#
+# This file is part of icd9.
+#
+# icd9 is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# icd9 is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with icd9. If not, see <http:#www.gnu.org/licenses/>.
 
 # assume length is one for strim
 strim <- function(x) {
@@ -6,6 +22,7 @@ strim <- function(x) {
   return(NA_character_)
 }
 
+# very quick, but drops any encoding labels
 trim <- function (x) {
   nax <- is.na(x)
   x[!nax] <- .Call("icd9_trimCpp", PACKAGE = "icd9", as.character(x[!nax]))
@@ -41,7 +58,7 @@ asCharacterNoWarn <- function(x) {
 "%nin%" <- function(x, table)
   match(x, table, nomatch = 0) == 0
 
-strip <- function (x, pattern = " ", useBytes = TRUE)
+strip <- function(x, pattern = " ", useBytes = TRUE)
   gsub(pattern = pattern, replacement = "", x = x,
        fixed = TRUE, useBytes = useBytes)
 
@@ -55,14 +72,15 @@ saveInDataDir <- function(var, suffix = "") {
 #' @title encode TRUE as 1, and FALSE as 0 (integers)
 #' @description when saving data as text files for distribution, printing large
 #'   amounts of text containing TRUE and FALSE is inefficient. Convert to binary
-#'   takes more R memory, but allows more compact output TODO: test
+#'   takes more R memory, but allows more compact output
 #' @details Taken from my
-#'   \href{http://cran.r-project.org/web/packages/jwutil/index.html}{\code{jwutil}
-#'   package}.#' @param x dataframe which may contain logical fields
+#'   \href{https://github.com/jackwasey/jwutil}{\code{jwutil} package}, which is
+#'   also intermittently on CRAN
+#' @param x dataframe which may contain logical fields
 #' @return data frame without logical fields
 #' @keywords internal manip
 logicalToBinary <- function(x) {
-  checkmate::assertDataFrame(x, min.rows = 1, min.cols = 1)
+  assertDataFrame(x, min.rows = 1, min.cols = 1)
   if (any(dim(x) == 0))
     stop("got zero in at least one dimension in data frame. %d, %d",
          dim(x)[1], dim(x)[2])
@@ -109,7 +127,7 @@ strMultiMatch <- function(pattern, text, dropEmpty = FALSE, ...) {
           pattern = pattern,
           text=x, ...),
         ...)
-    )[ - 1]
+    )[ -1]
   )
   if (!dropEmpty) return(result)
   result[sapply(result, function(x) length(x) != 0)]
@@ -122,48 +140,33 @@ strMultiMatch <- function(pattern, text, dropEmpty = FALSE, ...) {
 #' @param swap logical scalar, whether to swap the names and values. Default is
 #'   not to swap, so the first match becomes the name.
 #' @keywords internal
-strPairMatch <- function(pattern, text, swap = FALSE, dropEmpty = FALSE, ...) {
-  checkmate::assertString(pattern)
-  checkmate::assertCharacter(text, min.len = 1)
-  checkmate::assertFlag(swap)
-  checkmate::assertFlag(dropEmpty)
+strPairMatch <- function(pattern, text, swap = FALSE, dropEmpty = FALSE, pos = c(1, 2), ...) {
+  assertString(pattern)
+  assertCharacter(text, min.len = 1)
+  assertFlag(swap)
+  assertFlag(dropEmpty)
+  assertIntegerish(pos, len = 2, lower = 1, any.missing = FALSE)
 
   res <- strMultiMatch(pattern = pattern, text = text,
                        dropEmpty = dropEmpty, ...)
-  stopifnot(all(sapply(res, function(x) length(x) == 2)))
 
   outNames <- vapply(X = res,
                      FUN = "[",
                      FUN.VALUE = character(1),
-                     ifelse(swap, 2, 1))
+                     ifelse(swap, pos[2], pos[1]))
   stopifnot(all(!is.na(outNames)))
 
   out <- vapply(X = res,
                 FUN = "[",
                 FUN.VALUE = character(1),
-                ifelse(swap, 1, 2))
+                ifelse(swap, pos[1], pos[2]))
   stopifnot(all(!is.na(out)))
 
   names(out) <- outNames
   out
 }
 
-#' @title read file from zip at URL
-#' @description downloads zip file, and opens named file \code{filename}, or the
-#'   single file in zip if \code{filename} is not specified. FUN is a function,
-#'   with additional arguments to FUN given by \dots.
-#' @param url character vector of length one containing URL of zip file.
-#' @param filename character vector of length one containing name of file to
-#'   extract from zip. If not specified, and the zip contains a single file,
-#'   then this single file will be used.
-#' @param FUN function used to process the file in the zip, defaults to
-#'   readLines. The first argument to FUN will be the path of the extracted
-#'   \code{filename}
-#' @param \dots further arguments to FUN
-#' @keywords internal
-read.zip.url <- function(url, filename = NULL, FUN = readLines, ...) {
-  stopifnot(length(filename) <= 1)
-  stopifnot(is.character(url), length(url) == 1)
+zip_single <- function(url, filename, save_path) {
   zipfile <- tempfile()
   download.file(url = url, destfile = zipfile, quiet = TRUE)
   zipdir <- tempfile()
@@ -180,21 +183,107 @@ read.zip.url <- function(url, filename = NULL, FUN = readLines, ...) {
   } else
     stopifnot(filename %in% files)
 
-  do.call(FUN, args = c(list(file.path(zipdir, filename), warn = FALSE),
-                        list(...)))
+  file.copy(file.path(zipdir, filename), save_path, overwrite = TRUE)
 }
-
 # EXCLUDE COVERAGE END
 
 getVisitId <- function(x, visitId = NULL) {
-  checkmate::checkDataFrame(x, min.cols = 1, col.names = "named")
+  guesses <- c("visit.?Id", "patcom", "encounter.?id", "enc.?id",
+               "in.*enc", "out.*enc", "visit", "enc")
+  checkDataFrame(x, min.cols = 1, col.names = "named")
+
   if (is.null(visitId)) {
-    if (!any(names(x) == "visitId"))
+    for (guess in guesses) {
+      guess_matched <- grep(guess, names(x), ignore.case = TRUE, value = TRUE)
+      if (length(guess_matched) == 1) {
+        visitId <- guess_matched
+        break
+      }
+    }
+    if (is.null(visitId))
       visitId <- names(x)[1]
-    else
-      visitId <- "visitId"
   }
-  checkmate::assertString(visitId)
+  assertString(visitId)
   stopifnot(visitId %in% names(x))
-  return(visitId)
+  visitId
+}
+
+# guess which field contains the (only) ICD code, in order of preference
+# case-insensitive regex. If there are zero or multiple matches, we move on down
+# the list, meaning some later possibilities are more or less specific regexes
+# than earlier ones.
+getIcdField <- function(x, icd9Field = NULL) {
+  guesses <- c("icd.?9", "icd.?9.?Code", "icd", "diagnos", "diag.?code", "diag", "i9")
+  checkDataFrame(x, min.cols = 1, col.names = "named")
+  if (is.null(icd9Field)) {
+    for (guess in guesses) {
+      guess_matched <- grep(guess, names(x), ignore.case = TRUE, value = TRUE)
+      if (length(guess_matched) == 1) {
+        icd9Field <- guess_matched
+        break
+      }
+    }
+    if (is.null(icd9Field))
+      # still NULL so fallback to second column
+      icd9Field <- names(x)[2]
+    # Could look at contents of the data frame, although this evaluates a
+    # promise on potentially a big data frame, so could be costly
+  }
+  assertString(icd9Field)
+  stopifnot(icd9Field %in% names(x))
+  icd9Field
+}
+
+getLatestBillableVersion <- function() "32"
+
+#' @title trim null or empty values from a list
+#' @param x list
+#' @return trimmed list
+#' @keywords internal
+listTrimFlat  <-  function(x) {
+  suppressWarnings(
+    x[sapply(x, length) != 0 &
+        sapply(x, nchar) != 0 &
+        !sapply(x, function(y) all(is.null(y))) &
+        !sapply(x, function(y) all(is.na(y)))
+      ]
+  )
+}
+
+#' @title swap names and values of a vector
+#' @param x named vector
+#' @return vector
+#' @keywords internal
+swapNamesWithVals <- function(x) {
+  assertVector(x, strict = TRUE, any.missing = FALSE, names = "named")
+  new_names <- unname(x)
+  x <- names(x)
+  names(x) <- new_names
+  x
+}
+
+# mimic the R CMD check test
+getNonASCII <- function(x)
+  x[isNonASCII(x)]
+
+isNonASCII <- function (x) {
+  is.na(iconv(x, from = "latin1", to = "ASCII"))
+}
+
+utils::globalVariables(c("do_slow_tests", "do_online_tests"))
+
+skip_slow_tests <- function(msg = "skipping slow test") {
+  if (!exists("do_slow_tests") || !do_slow_tests)
+    testthat::skip(msg)
+}
+
+skip_online_tests <- function(msg = "skipping online test") {
+  if (!exists("do_online_tests") || !do_online_tests)
+    testthat::skip(msg)
+}
+
+# will be in next release of testthat
+skip_on_travis <- function() {
+  if (!identical(Sys.getenv("TRAVIS"), "true")) return()
+  testthat::skip("On Travis")
 }

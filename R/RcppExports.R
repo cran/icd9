@@ -5,113 +5,100 @@
 #' @description RcppParallel approach with openmp and vector of integer strategy
 #' @param aggregate single logical value, if /code{TRUE}, then take (possible much) more time to aggregate out-of-sequence visit IDs in the icd9df data.frame. If this is \code{FALSE}, then each contiguous group of visit IDs will result in a row of comorbidities in the output data. If you know your visitIds are possible disordered, then use \code{TRUE}.
 #' @keywords internal
-icd9ComorbidShortCpp <- function(icd9df, icd9Mapping, visitId = "visitId", icd9Field = "icd9", threads = 8L, chunkSize = 256L, ompChunkSize = 1L, aggregate = TRUE) {
+icd9ComorbidShortCpp <- function(icd9df, icd9Mapping, visitId, icd9Field, threads = 8L, chunkSize = 256L, ompChunkSize = 1L, aggregate = TRUE) {
     .Call('icd9_icd9ComorbidShortCpp', PACKAGE = 'icd9', icd9df, icd9Mapping, visitId, icd9Field, threads, chunkSize, ompChunkSize, aggregate)
 }
 
-#' @rdname convert
-#' @name convert
-#' @export
-icd9MajMinToCode <- function(major, minor, isShort) {
-    .Call('icd9_icd9MajMinToCode', PACKAGE = 'icd9', major, minor, isShort)
+icd9MajMinToCodeShim <- function(mjr, mnr, isShort) {
+    .Call('icd9_icd9MajMinToCodeShim', PACKAGE = 'icd9', mjr, mnr, isShort)
+}
+
+icd9MajMinToShortShim <- function(mjr, mnr) {
+    .Call('icd9_icd9MajMinToShortShim', PACKAGE = 'icd9', mjr, mnr)
+}
+
+icd9MajMinToDecimalShim <- function(mjr, mnr) {
+    .Call('icd9_icd9MajMinToDecimalShim', PACKAGE = 'icd9', mjr, mnr)
 }
 
 #' @rdname convert
-#' @export
-icd9MajMinToShort <- function(major, minor) {
-    .Call('icd9_icd9MajMinToShort', PACKAGE = 'icd9', major, minor)
-}
-
-#' @rdname convert
-#' @export
-icd9MajMinToDecimal <- function(major, minor) {
-    .Call('icd9_icd9MajMinToDecimal', PACKAGE = 'icd9', major, minor)
-}
-
-#' @rdname convert
-#' @export
+#' @keywords internal manip
 icd9PartsToShort <- function(parts) {
     .Call('icd9_icd9PartsToShort', PACKAGE = 'icd9', parts)
 }
 
 #' @rdname convert
-#' @export
+#' @keywords internal manip
 icd9PartsToDecimal <- function(parts) {
     .Call('icd9_icd9PartsToDecimal', PACKAGE = 'icd9', parts)
 }
 
-#' @rdname convert
-#' @export
-icd9MajMinToParts <- function(major, minor) {
-    .Call('icd9_icd9MajMinToParts', PACKAGE = 'icd9', major, minor)
+icd9MajMinToPartsShim <- function(mjr, mnr) {
+    .Call('icd9_icd9MajMinToPartsShim', PACKAGE = 'icd9', mjr, mnr)
 }
 
-icd9MajMinToParts_list <- function(major, minor) {
-    .Call('icd9_icd9MajMinToParts_list', PACKAGE = 'icd9', major, minor)
+icd9MajMinToParts_listShim <- function(mjr, mnr) {
+    .Call('icd9_icd9MajMinToParts_listShim', PACKAGE = 'icd9', mjr, mnr)
 }
 
 #' @rdname convert
-#' @export
+#' @keywords internal manip
 icd9ShortToParts <- function(icd9Short, minorEmpty = "") {
     .Call('icd9_icd9ShortToParts', PACKAGE = 'icd9', icd9Short, minorEmpty)
 }
 
 #' @rdname convert
-#' @export
+#' @keywords internal manip
 icd9DecimalToParts <- function(icd9Decimal, minorEmpty = "") {
     .Call('icd9_icd9DecimalToParts', PACKAGE = 'icd9', icd9Decimal, minorEmpty)
 }
 
-#' @rdname convert
+#' @title Convert ICD-9 codes between short and decimal forms
+#' @template icd9-short
+#' @template icd9-decimal
 #' @export
 icd9ShortToDecimal <- function(icd9Short) {
     .Call('icd9_icd9ShortToDecimal', PACKAGE = 'icd9', icd9Short)
 }
 
-#' @rdname convert
+#' @rdname icd9ShortToDecimal
 #' @export
 icd9DecimalToShort <- function(icd9Decimal) {
     .Call('icd9_icd9DecimalToShort', PACKAGE = 'icd9', icd9Decimal)
 }
 
-#' @rdname convert
+#' @title Get major (three-digit) part of ICD-9 codes
+#' @template icd9-any
+#' @template isShort
 #' @export
 icd9GetMajor <- function(icd9, isShort) {
     .Call('icd9_icd9GetMajor', PACKAGE = 'icd9', icd9, isShort)
 }
 
-#' @name icd9Is
-#' @title are the given codes numeric, V or E type?
-#' @description Quickly find V or E codes, without any validation.
-#' @template icd9-any
-#' @export
-icd9IsV <- function(icd9) {
-    .Call('icd9_icd9IsV', PACKAGE = 'icd9', icd9)
+#' @title test whether elements of vector begin with V, E (or any other
+#'   character)
+#' @description Current returns a std::vector<bool> which is not thread safe,
+#'   or particularly fast, although it is memory efficient in the standard
+#'   borked implementation. As of icd9 version 1.2, this is not called by
+#'   threaded code, but this could change, so beware! ASCII spaces are trimmed
+#'   from the start of the string before testing, but no other whitesapce
+#' @param sv std::vector<std::string>&
+#' @param x const char* of choices of first character to match
+#' @keywords internal
+icd9IsA <- function(sv, x, invert = FALSE) {
+    .Call('icd9_icd9IsA', PACKAGE = 'icd9', sv, x, invert)
 }
 
-#' @rdname icd9Is
-#' @export
-icd9IsE <- function(icd9) {
-    .Call('icd9_icd9IsE', PACKAGE = 'icd9', icd9)
-}
-
-#' @rdname icd9Is
-#' @export
-icd9IsN <- function(icd9) {
-    .Call('icd9_icd9IsN', PACKAGE = 'icd9', icd9)
-}
-
-icd9LongToWideCpp <- function(icd9df, visitId = "visitId", icd9Field = "icd9", aggregate = TRUE) {
+icd9LongToWideCpp <- function(icd9df, visitId, icd9Field, aggregate = TRUE) {
     .Call('icd9_icd9LongToWideCpp', PACKAGE = 'icd9', icd9df, visitId, icd9Field, aggregate)
 }
 
-icd9AddLeadingZeroesMajorSingle <- function(major) {
-    .Call('icd9_icd9AddLeadingZeroesMajorSingle', PACKAGE = 'icd9', major)
+icd9AddLeadingZeroesMajorSingleShim <- function(mjr) {
+    .Call('icd9_icd9AddLeadingZeroesMajorSingleShim', PACKAGE = 'icd9', mjr)
 }
 
-#' @rdname icd9AddLeadingZeroes
-icd9AddLeadingZeroesMajor <- function(major) {
-    .Call('icd9_icd9AddLeadingZeroesMajor', PACKAGE = 'icd9', major)
+icd9AddLeadingZeroesMajorShim <- function(mjr) {
+    .Call('icd9_icd9AddLeadingZeroesMajorShim', PACKAGE = 'icd9', mjr)
 }
 
 #' @rdname icd9AddLeadingZeroes
@@ -138,24 +125,8 @@ icd9AddLeadingZeroes <- function(icd9, isShort) {
     .Call('icd9_icd9AddLeadingZeroes', PACKAGE = 'icd9', icd9, isShort)
 }
 
-#' @title expand decimal part of ICD-9 code to cover all possible sub-codes
-#' @description Accepts a single number or character input starting point for
-#'   generation of all possible decimal parts of ICD9 code. e.g. giving an empty
-#'   input will fill out 111 combinations, e..g .1 .11 .12 .... .2 ....
-#' @template minor
-#' @param isE single logical, which if TRUE, treats the minor as part of an E
-#'   code (which is one character), as opposed to a V or numeric-only code,
-#'   which is two character. Default is \code{FALSE}.
-#' @examples
-#'   # return all possible decimal parts of ICD9 codes (111 in total)
-#'   length(icd9:::icd9ExpandMinor("", isE = FALSE))
-#'   icd9:::icd9ExpandMinor("1") # "1"  "10" "11" "12" "13" "14" "15" "16" "17" "18" "19"
-#' @return NA for invalid minor, otherwise a vector of all possible (perhaps
-#'   non-existent) sub-divisions.
-#' @family ICD-9 ranges
-#' @keywords internal manip
-icd9ExpandMinor <- function(minor, isE = FALSE) {
-    .Call('icd9_icd9ExpandMinor', PACKAGE = 'icd9', minor, isE)
+icd9ExpandMinorShim <- function(mnr, isE = FALSE) {
+    .Call('icd9_icd9ExpandMinorShim', PACKAGE = 'icd9', mnr, isE)
 }
 
 icd9ChildrenShortCpp <- function(icd9Short, onlyReal) {
@@ -177,8 +148,7 @@ icd9ChildrenCpp <- function(icd9, isShort, onlyReal = TRUE) {
 #' @template icd9-any
 #' @template isShort
 #' @param isShortReference logical, see argument \code{isShort}
-#' @return logical vector of which icd9 match or are subcategory of
-#'   \code{icd9Reference}
+#' @return logical vector
 #' @keywords internal
 icd9InReferenceCode <- function(icd9, icd9Reference, isShort, isShortReference = TRUE) {
     .Call('icd9_icd9InReferenceCode', PACKAGE = 'icd9', icd9, icd9Reference, isShort, isShortReference)

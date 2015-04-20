@@ -1,9 +1,22 @@
-
-# may wish to skip slow tests on CRAN, Travis or locally, so decide here:
-# identical(Sys.getenv("TRAVIS"), "true") # or NOT_CRAN
+# Copyright (C) 2014 - 2015  Jack O. Wasey
 #
-# i want test coverage on travis, and can wait for the remote builds. NOT_CRAN
-# appears to be set only by devtools::check()
+# This file is part of icd9.
+#
+# icd9 is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# icd9 is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with icd9. If not, see <http:#www.gnu.org/licenses/>.
+
+if (!exists("do_slow_tests") || !do_slow_tests) message("Will skip slow tests")
+if (!exists("do_online_tests") || !do_online_tests) message("Will skip online tests")
 
 set.seed(1441)
 n <- 500
@@ -105,6 +118,8 @@ one_of_each <- c("002.3", "140.25", "245", "285", "290.01", "389.00",
                  "765", "780.95", "800", "V02.34", "E900.4")
 
 # two items per map, two codes per item, two codes for two visits
-twoPts <- list(visitId = c("v01", "v01", "v02", "v02"),
-               icd9 = c("040", "000", "100", "000"))
-twoMap <- list("malady" = c("100", "2000"), "ailment" = c("003", "040"))
+twoPts <- data.frame(visitId = c("v01", "v01", "v02", "v02"),
+               icd9 = c("040", "000", "100", "000"),
+               stringsAsFactors = FALSE)
+twoMap <- list("malady" = c("100", "2000"),
+               "ailment" = c("003", "040"))

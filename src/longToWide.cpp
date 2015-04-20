@@ -1,3 +1,20 @@
+// Copyright (C) 2014 - 2015  Jack O. Wasey
+//
+// This file is part of icd9.
+//
+// icd9 is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// icd9 is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with icd9. If not, see <http://www.gnu.org/licenses/>.
+
 // [[Rcpp::interfaces(r, cpp)]]
 #include <local.h>
 #include <stdio.h>
@@ -10,18 +27,19 @@ using namespace Rcpp;
 CharacterVector raggedToWide(const VecVecStr& ragged, int max_per_pt,
 		const VecStr &visitIds) {
 #ifdef ICD9_DEBUG_TRACE
-	std::cout << "visitIds = ";
+	Rcpp::Rcout << "visitIds = ";
 	printIt(visitIds);
 #endif
 	VecStr::size_type distinct_visits = ragged.size();
 	CharacterVector out(distinct_visits * max_per_pt, NA_STRING); // optionally default empty strings? NA? User can do this for now.
 #ifdef ICD9_DEBUG
 			if (distinct_visits==0) {
-				std::cout << "no visits. returning blank data\n";
+				Rcpp::Rcout << "no visits. returning blank data\n";
 				return CharacterVector::create();
 			}
 			if (distinct_visits != visitIds.size()) {
-				std::cout << "visit and ragged sizes differ. visits = " << visitIds.size() << ", ragged size = " << distinct_visits << ": returning blank data\n";
+				Rcpp::Rcout << "visit and ragged sizes differ. visits = " << visitIds.size() <<
+				  ", ragged size = " << distinct_visits << ": returning blank data\n";
 				return CharacterVector::create();
 			}
 #endif
@@ -29,17 +47,18 @@ CharacterVector raggedToWide(const VecVecStr& ragged, int max_per_pt,
 		const VecStr& this_row = ragged[row_it];
 		VecStr::size_type this_row_len = this_row.size();
 		for (VecStr::size_type col_it = 0; col_it < this_row_len; ++col_it) {
-			VecVecStr::size_type out_idx = row_it + (distinct_visits * col_it); // straight to row major
-			// TODO: someday it may be faster to write out column major, then transpose afterwards.
+		  // write in row major format, but this means transpose needed later
+			VecVecStr::size_type out_idx = row_it + (distinct_visits * col_it);
 			out[out_idx] = this_row[col_it];
 		}
 	}
 #ifdef ICD9_DEBUG
-	std::cout << "writing dimensions\n";
+	Rcpp::Rcout << "writing dimensions\n";
 #endif
-	out.attr("dim") = Dimension(distinct_visits, max_per_pt); // set dimensions in reverse (row major for parallel step)
+			// set dimensions in reverse (row major for parallel step)
+	out.attr("dim") = Dimension(distinct_visits, max_per_pt);
 #ifdef ICD9_DEBUG
-			std::cout << "writing labels\n";
+			Rcpp::Rcout << "writing labels\n";
 #endif
 	CharacterVector nonames;
 	rownames(out) = wrap(visitIds);
@@ -47,7 +66,7 @@ CharacterVector raggedToWide(const VecVecStr& ragged, int max_per_pt,
 }
 
 int longToRagged(const SEXP& icd9df, VecVecStr& ragged, VecStr& visitIds,
-		const std::string visitId = "visitId", const std::string icd9Field =
+		const std::string visitId, const std::string icd9Field =
 				"icd9", bool aggregate = true) {
 #ifdef ICD9_VALGRIND
 	CALLGRIND_START_INSTRUMENTATION;
@@ -60,14 +79,15 @@ int longToRagged(const SEXP& icd9df, VecVecStr& ragged, VecStr& visitIds,
 	ragged.reserve(vlen / approx_cmb_per_visit);
 	int max_per_pt = 1;
 	if (TYPEOF(vsexp) != STRSXP)
-		Rf_error("need string input to longToRagged\n");
+		Rcpp::stop("need string input to longToRagged\n");
 #ifdef ICD9_DEBUG
-	std::cout << "longToRagged SEXP is STR\n";
+	Rcpp::Rcout << "longToRagged SEXP is STR\n";
 #endif
 
 	const char* lastVisitId = "";
 	for (int i = 0; i < vlen; ++i) {
-		const char* icd = CHAR(STRING_ELT(icds, i)); // always STRING? may get pure numeric/integer
+	  // always STRING? may get numeric, integer, factor? Can always handle this on R side
+		const char* icd = CHAR(STRING_ELT(icds, i));
 		const char* vi = CHAR(STRING_ELT(vsexp, i));
 
 		if (strcmp(lastVisitId, vi) != 0
@@ -108,8 +128,8 @@ int longToRagged(const SEXP& icd9df, VecVecStr& ragged, VecStr& visitIds,
 
 // [[Rcpp::export]]
 CharacterVector icd9LongToWideCpp(const SEXP& icd9df,
-		const std::string visitId = "visitId", const std::string icd9Field =
-				"icd9", bool aggregate = true) {
+		const std::string visitId, const std::string icd9Field,
+		bool aggregate = true) {
 
 	// a few options here. character matrix would make sense, but this can't be a factor. data frame harder to process on C++ side.
 	// Matrix easy to convert to data frame in R, if needed. Rows in output don't correspond to input, so no strong reason to preserve factors in any way.
@@ -121,7 +141,7 @@ CharacterVector icd9LongToWideCpp(const SEXP& icd9df,
 	const SEXP vsexp = PROTECT(getRListOrDfElement(icd9df, visitId.c_str()));
 	UNPROTECT(1);
 	if (TYPEOF(vsexp) != STRSXP)
-		Rf_error(
+		Rcpp::stop(
 				"visitIds should be pre-converted to str - which is necessary for matrix rowname output anyway");
 
 	VecStr visitIds; // may be vector of integers or strings

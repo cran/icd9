@@ -1,3 +1,20 @@
+# Copyright (C) 2014 - 2015  Jack O. Wasey
+#
+# This file is part of icd9.
+#
+# icd9 is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# icd9 is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with icd9. If not, see <http:#www.gnu.org/licenses/>.
+
 #' @title ICD-9-CM chapters
 #' @name icd9Chapters
 #' @aliases icd9ChaptersSub icd9ChaptersMajor icd9chapters icd9Chapters
@@ -26,6 +43,7 @@
 #'   Injury And Poisoning }
 #' @keywords datasets list category
 #' @docType data
+#' @source \url{http://www.cms.gov/Medicare/Coding/ICD9ProviderDiagnosticCodes/codes.html}
 #' @format list with chapter/usb-chapter or major names stored in list names,
 #'   each with two element named character vector with start and end codes.
 NULL
@@ -171,3 +189,80 @@ NULL
 #' @keywords datasets
 #' @docType data
 NULL
+
+#' @title list of annual versions of billable leaf nodes of ICD-9-CM
+#' @name icd9Billable
+#' @description These are derived from the CMS published updates, with versions
+#'   23 to 32 currently available going back to 2004/5. The source files back to
+#'   version 27 have short and long descriptions. The short descriptions are in
+#'   ASCII with no special characters, whereas the long descriptions contain
+#'   accented characters which seem to be interpretable as unicode, latin-1 or
+#'   cp1252. This all done during package creation, but can be repeated by
+#'   package users, including pulling the data from the web pages directly.
+#'   Despite my best efforts, current locale can give different results, but
+#'   this packaged data is correct, with some UTF-8 encoded strings.
+#' @docType data
+#' @keywords datasets
+#' @format list of data frames. Each list item is named by the version as a
+#'   string, e.g. "32". The constituent data frames have columns \code{icd9},
+#'   \code{shortDesc}, and \code{longDesc}.
+#' @source \url{http://www.cms.gov/Medicare/Coding/ICD9ProviderDiagnosticCodes/codes.html}
+NULL
+
+
+# we don't ever use magrittr in 'live' package use, just when it is using its
+# own functions for testing and generating its own data: in those cases magrittr
+# will be available, but we don't want CRAN check problems, so:
+utils::globalVariables(c("%<>%"))
+
+#' @title de-identified data from public Vermont source for 2013
+#' @name vermont_dx
+#' @details Conditions of Release Release of public use data is subject to the
+#'   following conditions, which the requestor agrees to upon accepting copies
+#'   of the data:
+#'
+#'   1. The data may not be used in any manner that attempts to or does
+#'   identify, directly or indirectly, any individual patient or physician.
+#'
+#'   2. The requestor agrees to incorporate the following, or a substantially
+#'   similar, disclaimer in all reports or publications that include public use
+#'   data: "Hospital discharge data for use in this study were supplied by the
+#'   Vermont Association of Hospitals and Health Systems-Network Services
+#'   Organization (VAHHS-NSO) and the Vermont Department of Banking, Insurance,
+#'   Securities and Health Care Administration (BISHCA). All analyses,
+#'   interpretations or conclusions based on these data are solely that of [the
+#'   requestor]. VAHHS-NSO and BISHCA disclaim responsibility for any such
+#'   analyses, interpretations or conclusions. In addition, as the data have
+#'   been edited and processed by VAHHS-NSO, BISHCA assumes no responsibility
+#'   for errors in the data due to coding or processing"
+#' @source
+#' \url{http://healthvermont.gov/research/hospital-utilization/RECENT_PU_FILES.aspx}
+#'
+#' @format CSV original, minimally processed into R data.
+#' @keywords datasets
+#' @author Vermont Division of Health Care Administration
+#' @docType data
+.vermont <- function() {
+  vermont_dx <- read.csv("VTINP13.TXT",
+                         stringsAsFactors = FALSE,
+                         strip.white = TRUE,
+                         nrows = 1001)[, c(74, 4, 6, 7, 11, 13:32)]
+  age_group <- vermont_dx$intage
+  attr(age_group, "class") <- "factor"
+  attr(age_group, "levels") <- c("Under 1", "1-17", "18-24",
+                               "25-29", "30-34", "35-39",
+                               "40-44", "45-49", "50-54",
+                               "55-59", "60-64", "65-69",
+                               "70-74", "75 and over",
+                               "Unknown")
+  sex <- vermont_dx$sex
+  attr(sex, "class") <- "factor"
+  attr(sex, "levels") <- c("male", "female", "unknown")
+  vermont_dx$intage <- age_group
+  vermont_dx$sex <- sex
+  vermont_dx$dstat <- vermont_dx$dstat == 8 # death (other codes are for various discharge statuses)
+  names(vermont_dx)[c(1:5)] <- c("visit_id", "age_group", "sex", "death", "DRG")
+  vermont_dx %<>% head(1000)
+
+  saveInDataDir("vermont_dx")
+}

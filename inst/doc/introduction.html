@@ -10,7 +10,7 @@
 
 <meta name="author" content="Jack O. Wasey" />
 
-<meta name="date" content="2015-03-12" />
+<meta name="date" content="2015-04-20" />
 
 <title>Introducing icd9: working with ICD-9 codes and comorbidities in R</title>
 
@@ -64,7 +64,7 @@ img {
 <div id="header">
 <h1 class="title">Introducing icd9: working with ICD-9 codes and comorbidities in R</h1>
 <h4 class="author"><em>Jack O. Wasey</em></h4>
-<h4 class="date"><em>2015-03-12</em></h4>
+<h4 class="date"><em>2015-04-20</em></h4>
 </div>
 
 <div id="TOC">
@@ -87,6 +87,8 @@ img {
 <li><a href="#find-comorbidities-for-a-large-number-of-patients.">Find comorbidities for a large number of patients.</a></li>
 <li><a href="#arbitrary-icd-9-mapping">Arbitrary ICD-9 mapping</a></li>
 <li><a href="#reduce-comorbidity-mapping-from-possible-values-to-defined-diagnostic-codes.">Reduce comorbidity mapping from possible values to defined diagnostic codes.</a></li>
+<li><a href="#which-three-character-icd-9-codes-have-no-subcodes">Which three-character ICD-9 codes have no subcodes</a></li>
+<li><a href="#which-icd-9-codes-have-changed-between-versions-of-icd-9">Which ICD-9 codes have changed between versions of ICD-9?</a></li>
 </ul></li>
 <li><a href="#conclusion">Conclusion</a></li>
 </ul>
@@ -105,10 +107,13 @@ img {
 #&gt; 6    1001  4011    Y
 #&gt; 7    1002  4011    E</code></pre>
 <p>or</p>
-<pre><code>#&gt;      [,1]    [,2]   [,3]   [,4]   
-#&gt; 1000 &quot;40201&quot; &quot;2258&quot; &quot;7208&quot; &quot;25001&quot;
-#&gt; 1001 &quot;34400&quot; &quot;4011&quot; &quot;&quot;     &quot;&quot;     
-#&gt; 1002 &quot;4011&quot;  &quot;&quot;     &quot;&quot;     &quot;&quot;</code></pre>
+<pre><code>#&gt;   visit_id   DX1   DX2   DX3   DX4   DX5   DX6   DX7   DX8   DX9  DX10
+#&gt; 1        7 27801 03842 51881 41519 99591 42842  5849  5609  6826  5853
+#&gt; 2       10 71526 25000 42830  4280  4019  4241   311 49390  2724 73300
+#&gt; 3       13 71535 59651 78052 27800 V8537   311  4019 53081 56400      
+#&gt; 4       16 71535 49390 53081 27800  V140  V141  V142  V160 V8538      
+#&gt; 5       37 71536  4241  2859  2720  4414 53081 V5866                  
+#&gt; 6       41 71536 V1259 V1582  V160  V171</code></pre>
 <p>Of course, in real life, there are many problems with the data, such is <code>NA</code> entries, out-of-order <code>visitId</code>s, non-existent or invalid ICD-9 codes, etc.. Tools are provided to clean up the mess, and discover the comorbidities before admission or after discharge for these patients (or simply for any list of patients and ICD-9 codes: there is no requirement to work in the hospital admission paradigm.) The optional <code>poa</code> field indicates whether the code was determined to be <em>present on arrival</em>. The implicit default is to ignore it, and give ICD-9 code regardless of POA status, but filtering functions are provided and demonstrated later in this vignette.</p>
 <p>The comorbidities can be determined as follows (showing the first few columns for brevity):</p>
 <pre class="r"><code>icd9ComorbidAhrq(patientData)[, 1:8]
@@ -157,37 +162,48 @@ icd9IsValidShort(c(&quot;1&quot;, &quot;001&quot;, &quot;100&quot;, &quot;123456
 <p>These functions generate syntactically valid ICD-9 codes, without including parent codes when the range limit would subset the parent. E.g. <code>&quot;100.99&quot; %i9da% &quot;101.01&quot;</code> does not include <code>100</code> or <code>100.0</code>, both of which imply larger subsets than requested by the range command (i.e. every code up to <code>100.99</code>). The shorter forms <code>%i9s%</code> and <code>%i9d%</code> return only <em>real</em> codes (i.e. listed in the CMS definitions as either three-digit codes or diagnoses), whereas <code>%i9sa%</code> and <code>%i9da%</code> return all possible syntactically valid ICD-9 codes:</p>
 <pre class="r"><code># get all possible codes
 &quot;003&quot; %i9sa% &quot;0033&quot; %&gt;% head(9) # show first 9 of 111 values
-#&gt; [1] &quot;003&quot;   &quot;0030&quot;  &quot;00300&quot; &quot;00301&quot; &quot;00302&quot; &quot;00303&quot; &quot;00304&quot; &quot;00305&quot; &quot;00306&quot;
+#&gt; [1] &quot;0030&quot;  &quot;00300&quot; &quot;00301&quot; &quot;00302&quot; &quot;00303&quot; &quot;00304&quot; &quot;00305&quot; &quot;00306&quot; &quot;00307&quot;
 # just get the ones which correspond to diagnoses (keeping the 3-digit chapters)
-&quot;003&quot; %i9s% &quot;0033&quot;
-#&gt; [1] &quot;003&quot;   &quot;0030&quot;  &quot;0031&quot;  &quot;00320&quot; &quot;00321&quot; &quot;00322&quot; &quot;00323&quot; &quot;00324&quot; &quot;00329&quot;
+&quot;494&quot; %i9s% &quot;4941&quot;
+#&gt; [1] &quot;494&quot;  &quot;4940&quot; &quot;4941&quot;
 
 &quot;10099&quot; %i9sa% &quot;10101&quot;
-#&gt; [1] &quot;10099&quot; &quot;101&quot;   &quot;1010&quot;  &quot;10100&quot; &quot;10101&quot;
+#&gt; [1] &quot;10099&quot; &quot;10100&quot; &quot;10101&quot;
 &quot;V10&quot; %i9da% &quot;V10.02&quot;
-#&gt; [1] &quot;V10&quot;    &quot;V10.0&quot;  &quot;V10.00&quot; &quot;V10.01&quot; &quot;V10.02&quot;
+#&gt; [1] &quot;V10.00&quot; &quot;V10.01&quot; &quot;V10.02&quot;
 &quot;E987&quot; %i9da% &quot;E988.1&quot;
 #&gt;  [1] &quot;E987&quot;   &quot;E987.0&quot; &quot;E987.1&quot; &quot;E987.2&quot; &quot;E987.3&quot; &quot;E987.4&quot; &quot;E987.5&quot;
-#&gt;  [8] &quot;E987.6&quot; &quot;E987.7&quot; &quot;E987.8&quot; &quot;E987.9&quot; &quot;E988&quot;   &quot;E988.0&quot; &quot;E988.1&quot;
+#&gt;  [8] &quot;E987.6&quot; &quot;E987.7&quot; &quot;E987.8&quot; &quot;E987.9&quot; &quot;E988.0&quot; &quot;E988.1&quot;
 
 # can't range between different types:
 # &quot;V10&quot; %i9s% &quot;E800&quot; # throws an error</code></pre>
 <p>This is used internally to interpret ranges of ICD-9 codes specified in the literature. Sometimes it is not clear exactly what an ICD-9 range presented in a paper means, but at least we can explicitly decide what should be included in our interpretation, and the ranges can be reused even when the underlying codes may be different, as codes are added and removed from time-to-time, and although the original papers would have been based on their ICD-9 ranges resolving to a specific set of codes, they are likely to be valid for new diagnoses in the given subgroups. Ultimately, this needs detailed attention, but the strategy in  is to give a good best guess, given these limitations.</p>
 <p>Another way of specifying ranges are to use function calls. These are exactly equivalent to the <code>%i9s%</code> and <code>%i9d%</code> range operators. This example shows the result when the user specifies a range which would include parents but not all their children:</p>
-<pre class="r"><code>icd9ExpandRangeShort(&quot;V100&quot;, &quot;V1002&quot;, onlyReal = TRUE) # default, equivalent to %i9s%
-#&gt; [1] &quot;V1000&quot; &quot;V1001&quot; &quot;V1002&quot;
-icd9ExpandRangeShort(&quot;V100&quot;, &quot;V1002&quot;, onlyReal = FALSE) # V10.0 is not a leaf node, equivalent to %i9sa%
-#&gt; [1] &quot;V100&quot;  &quot;V1000&quot; &quot;V1001&quot; &quot;V1002&quot;</code></pre>
-<p>Although <code>V10.0</code> would include ten possible children, the range with  only returns 4 values to avoid the range returning broader classifications than intended (V10.0 would imply all its children).</p>
+<pre class="r"><code>icd9ExpandRangeShort(&quot;4820&quot;, &quot;4823&quot;) # default, equivalent to %i9s%
+#&gt; [1] &quot;4820&quot;  &quot;4821&quot;  &quot;4822&quot;  &quot;4823&quot;  &quot;48230&quot; &quot;48231&quot; &quot;48232&quot; &quot;48239&quot;
+icd9ExpandRangeShort(&quot;4820&quot;, &quot;4823&quot;, onlyReal = FALSE)
+#&gt;  [1] &quot;4820&quot;  &quot;48200&quot; &quot;48201&quot; &quot;48202&quot; &quot;48203&quot; &quot;48204&quot; &quot;48205&quot; &quot;48206&quot;
+#&gt;  [9] &quot;48207&quot; &quot;48208&quot; &quot;48209&quot; &quot;4821&quot;  &quot;48210&quot; &quot;48211&quot; &quot;48212&quot; &quot;48213&quot;
+#&gt; [17] &quot;48214&quot; &quot;48215&quot; &quot;48216&quot; &quot;48217&quot; &quot;48218&quot; &quot;48219&quot; &quot;4822&quot;  &quot;48220&quot;
+#&gt; [25] &quot;48221&quot; &quot;48222&quot; &quot;48223&quot; &quot;48224&quot; &quot;48225&quot; &quot;48226&quot; &quot;48227&quot; &quot;48228&quot;
+#&gt; [33] &quot;48229&quot; &quot;4823&quot;  &quot;48230&quot; &quot;48231&quot; &quot;48232&quot; &quot;48233&quot; &quot;48234&quot; &quot;48235&quot;
+#&gt; [41] &quot;48236&quot; &quot;48237&quot; &quot;48238&quot; &quot;48239&quot;
+# see the first few differences (which are by definition not 'real' codes):
+setdiff(icd9ExpandRangeShort(&quot;4820&quot;, &quot;4823&quot;, onlyReal = FALSE),
+        icd9ExpandRangeShort(&quot;4820&quot;, &quot;4823&quot;)) %&gt;% head
+#&gt; [1] &quot;48200&quot; &quot;48201&quot; &quot;48202&quot; &quot;48203&quot; &quot;48204&quot; &quot;48205&quot;</code></pre>
 <p>It is easy to find the children of a higher-level ICD-9 code:</p>
 <pre class="r"><code>icd9Children(&quot;391&quot;)
-#&gt; [1] &quot;3910&quot; &quot;3911&quot; &quot;3912&quot; &quot;3918&quot; &quot;3919&quot;
+#&gt; [1] &quot;391&quot;  &quot;3910&quot; &quot;3911&quot; &quot;3912&quot; &quot;3918&quot; &quot;3919&quot;
 # mid-level code
 icd9Children(&quot;0032&quot;)
-#&gt; [1] &quot;00320&quot; &quot;00321&quot; &quot;00322&quot; &quot;00323&quot; &quot;00324&quot; &quot;00329&quot;
+#&gt; [1] &quot;0032&quot;  &quot;00320&quot; &quot;00321&quot; &quot;00322&quot; &quot;00323&quot; &quot;00324&quot; &quot;00329&quot;
 # leaf node has no children
 icd9Children(&quot;00321&quot;)
-#&gt; [1] &quot;00321&quot;</code></pre>
+#&gt; [1] &quot;00321&quot;
+# pneumococcal pneumonia is a three-digit code with no descendants
+icd9Children(&quot;481&quot;)
+#&gt; [1] &quot;481&quot;</code></pre>
 <p>By adding <code>onlyReal = TRUE</code>, all syntactically valid ICD-9 codes are returned, even if not defined by CMS as diagnoses. This is relevant because of minor coding errors, or coding in a different year to the master list. A planned feature is to allow testing of an ICD-9 code against the valid codes for the year it was entered, but at present only the 2014 master list is used. This means that some older valid codes may no longer be on the list. However, there have been very few changes to ICD-9-CM in the last five years with ICD-10-CM in the wings.</p>
 <pre class="r"><code># first ten possible ICD-9 child codes from 391
 icd9Children(&quot;391&quot;, onlyReal = FALSE)[1:10]
@@ -211,15 +227,16 @@ icd9Explain(c(&quot;43410&quot;,&quot;43491&quot;), isShort = TRUE)
 &quot;391&quot; %&gt;% icd9Explain # single three-digit code
 #&gt; [1] &quot;Rheumatic fever with heart involvement&quot;
 &quot;391&quot; %&gt;% icd9Children # let's see the child codes
-#&gt; [1] &quot;3910&quot; &quot;3911&quot; &quot;3912&quot; &quot;3918&quot; &quot;3919&quot;
+#&gt; [1] &quot;391&quot;  &quot;3910&quot; &quot;3911&quot; &quot;3912&quot; &quot;3918&quot; &quot;3919&quot;
 &quot;391&quot; %&gt;% icd9Children %&gt;% icd9Explain # children condensed to parent code
 #&gt; [1] &quot;Rheumatic fever with heart involvement&quot;
 &quot;391&quot; %&gt;% icd9Children %&gt;% icd9Explain(doCondense = FALSE) # prevent condense
-#&gt; [1] &quot;Acute rheumatic pericarditis&quot;              
-#&gt; [2] &quot;Acute rheumatic endocarditis&quot;              
-#&gt; [3] &quot;Acute rheumatic myocarditis&quot;               
-#&gt; [4] &quot;Other acute rheumatic heart disease&quot;       
-#&gt; [5] &quot;Acute rheumatic heart disease, unspecified&quot;</code></pre>
+#&gt; [1] &quot;Rheumatic fever with heart involvement&quot;    
+#&gt; [2] &quot;Acute rheumatic pericarditis&quot;              
+#&gt; [3] &quot;Acute rheumatic endocarditis&quot;              
+#&gt; [4] &quot;Acute rheumatic myocarditis&quot;               
+#&gt; [5] &quot;Other acute rheumatic heart disease&quot;       
+#&gt; [6] &quot;Acute rheumatic heart disease, unspecified&quot;</code></pre>
 <p>Arbitrary named list(s) of codes:</p>
 <pre class="r"><code>icd9Explain(list(somecodes = c(&quot;001&quot;, &quot;391.0&quot;), 
                  morecodes = c(&quot;001.1&quot;, &quot;001.9&quot;)))
@@ -243,38 +260,40 @@ icd9Explain(c(&quot;43410&quot;,&quot;43491&quot;), isShort = TRUE)
 #&gt; [1] 133
 # icd9Explain summarizes these to just two groups:
 quanDeyoComorbid[[&quot;Dementia&quot;]] %&gt;% icd9Explain(warn = FALSE)
-#&gt; [1] &quot;Dementias&quot;                                                                 
-#&gt; [2] &quot;Dementia in conditions classified elsewhere without behavioral disturbance&quot;
-#&gt; [3] &quot;Dementia in conditions classified elsewhere with behavioral disturbance&quot;   
-#&gt; [4] &quot;Senile degeneration of brain&quot;
+#&gt; [1] &quot;Dementias&quot;                                  
+#&gt; [2] &quot;Dementia in conditions classified elsewhere&quot;
+#&gt; [3] &quot;Senile degeneration of brain&quot;
 # contrast with:
 quanDeyoComorbid[[&quot;Dementia&quot;]] %&gt;% icd9Explain(doCondense = FALSE, warn = FALSE)
 #&gt;  [1] &quot;Dementias&quot;                                                                 
 #&gt;  [2] &quot;Senile dementia, uncomplicated&quot;                                            
-#&gt;  [3] &quot;Presenile dementia, uncomplicated&quot;                                         
-#&gt;  [4] &quot;Presenile dementia with delirium&quot;                                          
-#&gt;  [5] &quot;Presenile dementia with delusional features&quot;                               
-#&gt;  [6] &quot;Presenile dementia with depressive features&quot;                               
-#&gt;  [7] &quot;Senile dementia with delusional features&quot;                                  
-#&gt;  [8] &quot;Senile dementia with depressive features&quot;                                  
-#&gt;  [9] &quot;Senile dementia with delirium&quot;                                             
-#&gt; [10] &quot;Vascular dementia, uncomplicated&quot;                                          
-#&gt; [11] &quot;Vascular dementia, with delirium&quot;                                          
-#&gt; [12] &quot;Vascular dementia, with delusions&quot;                                         
-#&gt; [13] &quot;Vascular dementia, with depressed mood&quot;                                    
-#&gt; [14] &quot;Other specified senile psychotic conditions&quot;                               
-#&gt; [15] &quot;Unspecified senile psychotic condition&quot;                                    
-#&gt; [16] &quot;Dementia in conditions classified elsewhere without behavioral disturbance&quot;
-#&gt; [17] &quot;Dementia in conditions classified elsewhere with behavioral disturbance&quot;   
-#&gt; [18] &quot;Senile degeneration of brain&quot;</code></pre>
+#&gt;  [3] &quot;Presenile dementia&quot;                                                        
+#&gt;  [4] &quot;Presenile dementia, uncomplicated&quot;                                         
+#&gt;  [5] &quot;Presenile dementia with delirium&quot;                                          
+#&gt;  [6] &quot;Presenile dementia with delusional features&quot;                               
+#&gt;  [7] &quot;Presenile dementia with depressive features&quot;                               
+#&gt;  [8] &quot;Senile dementia with delusional or depressive features&quot;                    
+#&gt;  [9] &quot;Senile dementia with delusional features&quot;                                  
+#&gt; [10] &quot;Senile dementia with depressive features&quot;                                  
+#&gt; [11] &quot;Senile dementia with delirium&quot;                                             
+#&gt; [12] &quot;Vascular dementia&quot;                                                         
+#&gt; [13] &quot;Vascular dementia, uncomplicated&quot;                                          
+#&gt; [14] &quot;Vascular dementia, with delirium&quot;                                          
+#&gt; [15] &quot;Vascular dementia, with delusions&quot;                                         
+#&gt; [16] &quot;Vascular dementia, with depressed mood&quot;                                    
+#&gt; [17] &quot;Other specified senile psychotic conditions&quot;                               
+#&gt; [18] &quot;Unspecified senile psychotic condition&quot;                                    
+#&gt; [19] &quot;Dementia in conditions classified elsewhere&quot;                               
+#&gt; [20] &quot;Dementia in conditions classified elsewhere without behavioral disturbance&quot;
+#&gt; [21] &quot;Dementia in conditions classified elsewhere with behavioral disturbance&quot;   
+#&gt; [22] &quot;Senile degeneration of brain&quot;</code></pre>
 <p>Use a range with more than two hundred ICD-9 codes (most of them not real):</p>
 <pre class="r"><code>length(&quot;390&quot; %i9da% &quot;392.1&quot;)
 #&gt; [1] 244
 &quot;390&quot; %i9da% &quot;392.1&quot; %&gt;% icd9Explain(warn = FALSE)
 #&gt; [1] &quot;Rheumatic fever without mention of heart involvement&quot;
 #&gt; [2] &quot;Rheumatic fever with heart involvement&quot;              
-#&gt; [3] &quot;Rheumatic chorea&quot;                                    
-#&gt; [4] &quot;Rheumatic chorea with heart involvement&quot;</code></pre>
+#&gt; [3] &quot;Rheumatic chorea with heart involvement&quot;</code></pre>
 <p>The warnings here are irrelevant because we know that `%i9da% produces codes which do not correspond to diagnoses. However, in other usage, the user would typically expect the ICD-9 codes he or she is using to be diagnostic, hence the default to warn.</p>
 </div>
 <div id="filtering-by-present-on-arrival" class="section level2">
@@ -369,9 +388,9 @@ names(quanElixComorbid)
 #&gt; Comorbidity PHTN: 
 #&gt; quanElixComorbid has 45 codes not in elixComorbid. First few are: 'Acute pulmonary heart disease' 'Chronic pulmonary heart disease' 'Arterioven fistu pul ves' 'Pulmon circulat dis NEC' 
 #&gt; Comorbidity HTN: 
-#&gt; quanElixComorbid has 89 codes not in elixComorbid. First few are: 'Essential hypertension' 'Malignant hypertension' 
+#&gt; quanElixComorbid has 89 codes not in elixComorbid. First few are: 'Essential hypertension' 
 #&gt; Comorbidity Valvular: 
-#&gt; quanElixComorbid has 8 codes not in elixComorbid. First few are: 'Diseases of mitral valve' 'Other diseases of endocardium'
+#&gt; quanElixComorbid has 106 codes not in elixComorbid. First few are: 'Diseases of mitral valve' 'Diseases of other endocardial structures' 'Other diseases of endocardium' 'Syphilitic endocarditis'
 # reuslts also returned as data
 str(difference)
 #&gt; List of 4
@@ -388,9 +407,9 @@ str(difference)
 #&gt;   ..$ only.x: chr(0) 
 #&gt;   ..$ only.y: chr [1:89] &quot;401&quot; &quot;4010&quot; &quot;40100&quot; &quot;40101&quot; ...
 #&gt;  $ Valvular:List of 3
-#&gt;   ..$ both  : chr [1:624] &quot;09320&quot; &quot;09321&quot; &quot;09322&quot; &quot;09323&quot; ...
+#&gt;   ..$ both  : chr [1:526] &quot;09320&quot; &quot;09321&quot; &quot;09322&quot; &quot;09323&quot; ...
 #&gt;   ..$ only.x: chr(0) 
-#&gt;   ..$ only.y: chr [1:8] &quot;0932&quot; &quot;09325&quot; &quot;09326&quot; &quot;09327&quot; ...</code></pre>
+#&gt;   ..$ only.y: chr [1:106] &quot;0932&quot; &quot;09325&quot; &quot;09326&quot; &quot;09327&quot; ...</code></pre>
 <p>Which pulmonary hypertension codes are only in Quan’s version?</p>
 <pre class="r"><code>difference$PHTN$only.y %&gt;% icd9GetReal %&gt;% icd9Explain
 #&gt; [1] &quot;Acute pulmonary heart disease&quot;                    
@@ -408,16 +427,16 @@ str(difference)
   &quot;icd9&quot;] %&gt;% unique -&gt; cardiac</code></pre>
 <p>then explain the list, just showing the first ten:</p>
 <pre class="r"><code>cardiac %&gt;% icd9Explain(warn = FALSE) %&gt;% head(10)
-#&gt;  [1] &quot;Rheumatic fever without mention of heart involvement&quot;
-#&gt;  [2] &quot;Rheumatic chorea&quot;                                    
-#&gt;  [3] &quot;Hypertensive heart disease&quot;                          
-#&gt;  [4] &quot;Hypertensive heart and chronic kidney disease&quot;       
-#&gt;  [5] &quot;Heart failure&quot;                                       
-#&gt;  [6] &quot;Chagas' disease with heart involvement&quot;              
-#&gt;  [7] &quot;Other gonococcal heart disease&quot;                      
-#&gt;  [8] &quot;Malignant neoplasm of heart&quot;                         
-#&gt;  [9] &quot;Benign neoplasm of heart&quot;                            
-#&gt; [10] &quot;Other acute rheumatic heart disease&quot;</code></pre>
+#&gt;  [1] &quot;Malignant neoplasm of thymus heart and mediastinum&quot;      
+#&gt;  [2] &quot;Rheumatic fever without mention of heart involvement&quot;    
+#&gt;  [3] &quot;Rheumatic fever with heart involvement&quot;                  
+#&gt;  [4] &quot;Rheumatic chorea&quot;                                        
+#&gt;  [5] &quot;Other rheumatic heart disease&quot;                           
+#&gt;  [6] &quot;Hypertensive heart disease&quot;                              
+#&gt;  [7] &quot;Hypertensive heart and chronic kidney disease&quot;           
+#&gt;  [8] &quot;Other acute and subacute forms of ischemic heart disease&quot;
+#&gt;  [9] &quot;Other forms of chronic ischemic heart disease&quot;           
+#&gt; [10] &quot;Acute pulmonary heart disease&quot;</code></pre>
 </div>
 <div id="find-comorbidities-for-a-large-number-of-patients." class="section level3">
 <h3>Find comorbidities for a large number of patients.</h3>
@@ -428,7 +447,7 @@ many_patients &lt;- icd9:::randomPatients(100000)
 system.time(
   icd9ComorbidAhrq(many_patients)
   )[[&quot;elapsed&quot;]] # result in seconds
-#&gt; [1] 0.884</code></pre>
+#&gt; [1] 1.04</code></pre>
 </div>
 <div id="arbitrary-icd-9-mapping" class="section level3">
 <h3>Arbitrary ICD-9 mapping</h3>
@@ -453,19 +472,74 @@ icd9Comorbid(patientData, myMap) # no +ve
 <pre class="r"><code>ahrqStrict &lt;- lapply(ahrqComorbid, icd9GetReal)
 str(ahrqComorbid[1:5]) # first five of the original:
 #&gt; List of 5
-#&gt;  $ CHF     : chr [1:120] &quot;39891&quot; &quot;40201&quot; &quot;40211&quot; &quot;40291&quot; ...
-#&gt;  $ Valvular: chr [1:624] &quot;09320&quot; &quot;09321&quot; &quot;09322&quot; &quot;09323&quot; ...
-#&gt;  $ PHTN    : chr [1:130] &quot;41511&quot; &quot;41512&quot; &quot;41513&quot; &quot;41514&quot; ...
-#&gt;  $ PVD     : chr [1:585] &quot;4400&quot; &quot;44000&quot; &quot;44001&quot; &quot;44002&quot; ...
-#&gt;  $ HTN     : chr [1:27] &quot;4011&quot; &quot;40110&quot; &quot;40111&quot; &quot;40112&quot; ...
+#&gt;  $ CHF     : chr [1:132] &quot;39891&quot; &quot;428&quot; &quot;4280&quot; &quot;42800&quot; ...
+#&gt;  $ Valvular: chr [1:568] &quot;0932&quot; &quot;09320&quot; &quot;09321&quot; &quot;09322&quot; ...
+#&gt;  $ PHTN    : chr [1:136] &quot;4151&quot; &quot;41510&quot; &quot;41511&quot; &quot;41512&quot; ...
+#&gt;  $ PVD     : chr [1:616] &quot;440&quot; &quot;4400&quot; &quot;44000&quot; &quot;44001&quot; ...
+#&gt;  $ HTN     : chr [1:36] &quot;4011&quot; &quot;40110&quot; &quot;40111&quot; &quot;40112&quot; ...
 str(ahrqStrict[1:5]) # and first five of the result:
 #&gt; List of 5
-#&gt;  $ CHF     : chr [1:25] &quot;39891&quot; &quot;40201&quot; &quot;40211&quot; &quot;40291&quot; ...
-#&gt;  $ Valvular: chr [1:38] &quot;09320&quot; &quot;09321&quot; &quot;09322&quot; &quot;09323&quot; ...
-#&gt;  $ PHTN    : chr [1:10] &quot;41511&quot; &quot;41512&quot; &quot;41513&quot; &quot;41519&quot; ...
-#&gt;  $ PVD     : chr [1:53] &quot;4400&quot; &quot;4401&quot; &quot;44020&quot; &quot;44021&quot; ...
-#&gt;  $ HTN     : chr [1:7] &quot;4011&quot; &quot;4019&quot; &quot;64200&quot; &quot;64201&quot; ...</code></pre>
+#&gt;  $ CHF     : chr [1:40] &quot;39891&quot; &quot;428&quot; &quot;4280&quot; &quot;4281&quot; ...
+#&gt;  $ Valvular: chr [1:55] &quot;0932&quot; &quot;09320&quot; &quot;09321&quot; &quot;09322&quot; ...
+#&gt;  $ PHTN    : chr [1:15] &quot;4151&quot; &quot;41511&quot; &quot;41512&quot; &quot;41513&quot; ...
+#&gt;  $ PVD     : chr [1:76] &quot;440&quot; &quot;4400&quot; &quot;4401&quot; &quot;4402&quot; ...
+#&gt;  $ HTN     : chr [1:11] &quot;4011&quot; &quot;4019&quot; &quot;6420&quot; &quot;64200&quot; ...</code></pre>
 <p>Note the much smaller numbers of codes in each group, now we have discarded all the ones which are not defined as diagnoses.</p>
+</div>
+<div id="which-three-character-icd-9-codes-have-no-subcodes" class="section level3">
+<h3>Which three-character ICD-9 codes have no subcodes</h3>
+<p>The ICD-9-CM scheme is structured as follows: - Chapter - Sub-chapter - Major part (3 digit codes) - sub-division (1st decimal place) - sub-sub-division (2nd decimal place)</p>
+<p>For most combinations of 0 to 9, nothing is defined. Sometimes, nodes at one level in the hierarchy are descriptive only of their children (branch nodes), whereas some are themselves billable. For this example, let’s find those numeric-only codes which have no children, and by implication are themselves directly billable codes. Here are the first ten:</p>
+<pre class="r"><code>allreal &lt;- icd9::icd9Hierarchy[[&quot;icd9&quot;]]
+# select the non-V and non-E codes with three characters (zeroes already prefixed)
+threedigitreal &lt;- allreal[nchar(allreal) == 3 &amp; icd9IsN(allreal)]
+# display
+threedigitdf &lt;- data.frame(icd9 = threedigitreal,  description = icd9Explain(threedigitreal))
+print(threedigitdf[1:10, ], row.names = FALSE)
+#&gt;  icd9                                  description
+#&gt;   001                                      Cholera
+#&gt;   002               Typhoid and paratyphoid fevers
+#&gt;   003                  Other salmonella infections
+#&gt;   004                                  Shigellosis
+#&gt;   005             Other food poisoning (bacterial)
+#&gt;   006                                    Amebiasis
+#&gt;   007          Other protozoal intestinal diseases
+#&gt;   008 Intestinal infections due to other organisms
+#&gt;   009            Ill-defined intestinal infections
+#&gt;   010                Primary tuberculous infection</code></pre>
+</div>
+<div id="which-icd-9-codes-have-changed-between-versions-of-icd-9" class="section level3">
+<h3>Which ICD-9 codes have changed between versions of ICD-9?</h3>
+<pre class="r"><code>new_since_27 &lt;- setdiff(icd9Billable[[&quot;32&quot;]][[&quot;icd9&quot;]],
+                         icd9Billable[[&quot;27&quot;]][[&quot;icd9&quot;]]) %&gt;% head
+lost_since_27 &lt;- setdiff(icd9Billable[[&quot;27&quot;]][[&quot;icd9&quot;]],
+                         icd9Billable[[&quot;32&quot;]][[&quot;icd9&quot;]]) %&gt;% tail
+
+# these are a few which were gained since v27
+data.frame(icd9 = new_since_27, desc = new_since_27 %&gt;% icd9Explain)
+#&gt;    icd9                                          desc
+#&gt; 1 04141                     Escherichia coli [E.coli]
+#&gt; 2 04142 Unspecified malignant neoplasm of skin of lip
+#&gt; 3 04143           Basal cell carcinoma of skin of lip
+#&gt; 4 04149                     Escherichia coli [E.coli]
+#&gt; 5 17300 Unspecified malignant neoplasm of skin of lip
+#&gt; 6 17301           Basal cell carcinoma of skin of lip
+# these are a few which were lost since v27
+data.frame(icd9 = lost_since_27, desc = lost_since_27 %&gt;% icd9Explain)
+#&gt;   icd9
+#&gt; 1 V122
+#&gt; 2 V138
+#&gt; 3 V191
+#&gt; 4 V251
+#&gt; 5 V403
+#&gt; 6 V854
+#&gt;                                                                      desc
+#&gt; 1                            Endocrine, metabolic, and immunity disorders
+#&gt; 2                                                Other specified diseases
+#&gt; 3                                                     Other eye disorders
+#&gt; 4 Encounter for insertion or removal of intrauterine contraceptive device
+#&gt; 5                                               Other behavioral problems
+#&gt; 6                                      Body Mass Index 40 and over, adult</code></pre>
 </div>
 </div>
 <div id="conclusion" class="section level2">
