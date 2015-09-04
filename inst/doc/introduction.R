@@ -5,6 +5,7 @@ suppressWarnings({
     library(icd9)
     library(magrittr)
     library(xtable)
+    library(utils)
     })
   })
 

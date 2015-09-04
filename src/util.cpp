@@ -19,6 +19,7 @@
 #include <Rinternals.h>
 #include <vector>
 #include <string>
+#include <Rcpp.h>
 #ifdef _OPENMP
 #include <omp.h>
 #endif
@@ -59,7 +60,7 @@ std::vector<std::string> trimCpp(std::vector<std::string>& sv) {
 // [[Rcpp::export]]
 bool assertFactorOrCharacter(SEXP x) {
 	if (!Rf_isString(x) && !Rf_isFactor(x)) {
-		Rf_error("Must be a factor or character");
+	  Rcpp::stop("Must be a factor or character");
 	}
 	return true; // Rcpp fails with void for some reason
 }

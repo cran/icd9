@@ -1,8 +1,9 @@
-<!-- README.md is generated from README.Rmd. Please edit that file -->
+<!-- README.md is generated from README.Rmd. Please edit that file and render with rmarkdown::render("README.Rmd")-->
+
 icd9
 ====
 
-[![Build Status](https://travis-ci.org/jackwasey/icd9.svg?branch=master)](https://travis-ci.org/jackwasey/icd9) [![Coverage Status](https://coveralls.io/repos/jackwasey/icd9/badge.svg?branch=master)](https://coveralls.io/r/jackwasey/icd9?branch=master)
+[![Build Status](https://travis-ci.org/jackwasey/icd9.svg?branch=master)](https://travis-ci.org/jackwasey/icd9) [![Coverage Status](https://coveralls.io/repos/jackwasey/icd9/badge.svg?branch=master)](https://coveralls.io/r/jackwasey/icd9?branch=master) [![CRAN version](http://www.r-pkg.org/badges/version/icd9)](https://cran.r-project.org/package=icd9) [![CRAN RStudio mirror downloads](http://cranlogs.r-pkg.org/badges/icd9)](https://cran.r-project.org/package=icd9) (RStudio mirror only)
 
 ICD-9 comorbidities, manipulation and validation
 ================================================
@@ -12,7 +13,7 @@ Main Features
 
 -   assignment of patients to high level comorbidities based on admission or discharge ICD-9 codes
     -   several mappings of ICD-9 codes to comorbidities are included (Quan, Deyo, Elixhauser, AHRQ)
-    -   very fast assignment of ICD-9 codes to comorbidities (using C++ internally, with automatic parallel execution using OpenMP when possible)
+    -   very fast assignment of ICD-9 codes to comorbidities (using C and C++ internally, with automatic parallel execution using OpenMP when available)
 -   Charlson and Van Walvaren score calculations
 -   validation of ICD-9 codes from different annual revisions of ICD-9-CM
 -   summarizing ICD-9 codes into groups, and to human-readable descriptions
@@ -25,6 +26,7 @@ New since last CRAN release:
 -   further performance increases: 1 million ICD-9 codes assigned to comorbidities in a couple of seconds
 -   logical matrix or data.frame for comorbidity output and manipulation
 -   see NEWS.md and github [changelog](https://github.com/jackwasey/icd9/commits/master) for more details
+-   minor update to fix an obscure memory leak found with address sanitizer.
 
 Introduction
 ------------
@@ -34,7 +36,7 @@ Calculate comorbidities, Charlson scores, perform fast and accurate validation, 
 Relevance
 ---------
 
-ICD-9 codes are still in wide use around the world, particularly in the USA where the ICD-9-CM (Clinical Modification) is in widespread use. ICD-10 and the corresponding ICD-10-CM are imminent, however a vast amount of patient data is recorded with ICD-9 codes of some kind: this package enables their use in R. A common requirement for medical research involving patients is determining new or existing comorbidities. This is often reported in *Table 1* of research papers to demonstrate the similarity or differences of groups of patients. This package is focussed on fast and accurate generation of this comorbidity information from raw lists of ICD-9 codes.
+ICD-9 codes are still in heavy use around the world, particularly in the USA where the ICD-9-CM (Clinical Modification) is in widespread use. ICD-10 and the corresponding ICD-10-CM are imminent, however a vast amount of patient data is recorded with ICD-9 codes of some kind: this package enables their use in R. A common requirement for medical research involving patients is determining new or existing comorbidities. This is often reported in *Table 1* of research papers to demonstrate the similarity or differences of groups of patients. This package is focussed on fast and accurate generation of this comorbidity information from raw lists of ICD-9 codes.
 
 ICD-9 code types
 ----------------
@@ -46,7 +48,7 @@ Examples
 
 See the vignette and code help for many more. Here's a taste:
 
-``` r
+``` {.r}
 patientData
 #>   visitId  icd9  poa
 #> 1    1000 40201    Y
@@ -88,7 +90,7 @@ Install
 
 The latest version is available in [github](https://github.com/jackwasey/icd9) and can be installed with:
 
-    # install.packages("devtools") # if needed
+    install.packages("devtools") # if needed
     devtools::install_github("jackwasey/icd9")
 
     install.packages("magrittr") # recommended, but not required

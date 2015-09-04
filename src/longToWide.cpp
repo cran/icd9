@@ -28,7 +28,7 @@ CharacterVector raggedToWide(const VecVecStr& ragged, int max_per_pt,
 		const VecStr &visitIds) {
 #ifdef ICD9_DEBUG_TRACE
 	Rcpp::Rcout << "visitIds = ";
-	printIt(visitIds);
+	// printIt(visitIds); // broken, not sure why.
 #endif
 	VecStr::size_type distinct_visits = ragged.size();
 	CharacterVector out(distinct_visits * max_per_pt, NA_STRING); // optionally default empty strings? NA? User can do this for now.
@@ -79,7 +79,7 @@ int longToRagged(const SEXP& icd9df, VecVecStr& ragged, VecStr& visitIds,
 	ragged.reserve(vlen / approx_cmb_per_visit);
 	int max_per_pt = 1;
 	if (TYPEOF(vsexp) != STRSXP)
-		Rcpp::stop("need string input to longToRagged\n");
+	  Rcpp::stop("need string input to longToRagged\n");
 #ifdef ICD9_DEBUG
 	Rcpp::Rcout << "longToRagged SEXP is STR\n";
 #endif
@@ -141,7 +141,7 @@ CharacterVector icd9LongToWideCpp(const SEXP& icd9df,
 	const SEXP vsexp = PROTECT(getRListOrDfElement(icd9df, visitId.c_str()));
 	UNPROTECT(1);
 	if (TYPEOF(vsexp) != STRSXP)
-		Rcpp::stop(
+	  Rcpp::stop(
 				"visitIds should be pre-converted to str - which is necessary for matrix rowname output anyway");
 
 	VecStr visitIds; // may be vector of integers or strings

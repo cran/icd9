@@ -585,7 +585,13 @@ test_that("diff comorbid works", {
 
   expect_that(resq <- icd9DiffComorbid(quanElixComorbid, quanDeyoComorbid, show = TRUE),
               testthat::not(gives_warning()))
-  capture.output(resq <- icd9DiffComorbid(quanElixComorbid, quanDeyoComorbid, show = TRUE))
+
+  expect_that(
+    utils::capture.output(
+      resq <- icd9DiffComorbid(quanElixComorbid, quanDeyoComorbid, show = TRUE)
+      ),
+    testthat::not(throws_error())
+  )
 
 })
 

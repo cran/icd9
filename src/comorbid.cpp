@@ -72,7 +72,7 @@ SEXP icd9ComorbidShortCpp(const SEXP& icd9df, const List& icd9Mapping,
 	Rcpp::Rcout << "type of vsexp = " << TYPEOF(vsexp) << "\n";
 #endif
 	if (TYPEOF(vsexp) != STRSXP)
-		Rcpp::stop("expecting vsexp to be character vector");
+	  Rcpp::stop("expecting vsexp to be character vector");
 	UNPROTECT(1); // vsexp not used further
 
 #ifdef ICD9_DEBUG_SETUP
@@ -109,7 +109,7 @@ SEXP icd9ComorbidShortCpp(const SEXP& icd9df, const List& icd9Mapping,
 #endif
 #ifdef ICD9_DEBUG_TRACE
 	Rcpp::Rcout << "out is: ";
-	printIt(out);
+	// printIt(out); // don't think I can do this through template, since char it is a base type?
 	Rcpp::Rcout << "printed\n";
 #endif
 	// try cast to logical first. (in which case I can use char for Out)
