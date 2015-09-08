@@ -1,5 +1,5 @@
 d32239bcb673463ab874e80d47fae504 *COPYING
-a4afee1714850b024f2f7308e8f7529d *DESCRIPTION
+574419d0123a8081b9fd7f0e719d5b93 *DESCRIPTION
 ad708124849888f16992d5f5d4bdeb2d *NAMESPACE
 7e33d1df1772d455d344696c41819e7b *R/RcppExports.R
 dae3a950cd1d192b9fcd9f69e3606d61 *R/benchmark.R
@@ -26,7 +26,7 @@ e0fc13d5fd91876f72ee55210a9ec9f5 *README.md
 b83e3fad971d73e128d3071de1cf74f4 *build/vignette.rds
 a6d6dd32f6f49097ae45ece0307d142b *cleanup
 023e7163cdafc2ddbbea17dc83f35490 *configure
-452b62a1c8ee8cc1ce559779936e1e5d *configure.ac
+f88d859765f0210a6bb5f8b8b1efcc52 *configure.ac
 bb8c1972ee5f14b8c3c55d0dac674591 *configure.win
 eb1fbe0c764f648781cd271e920dc822 *data/ahrqComorbid.RData
 c926eb8af6811d88864434219814417f *data/elixComorbid.RData
@@ -43,7 +43,7 @@ d32239bcb673463ab874e80d47fae504 *inst/COPYING
 309225434cbfe2d103868d6d7defbce0 *inst/COPYRIGHTS
 9f23ceae8045f39819d3a319f0afa28b *inst/doc/introduction.R
 3d47292686994fb69ee29808090966d9 *inst/doc/introduction.Rmd
-c2dc1b7c5d683be3da22c5a2f77027c0 *inst/doc/introduction.html
+4196094f78662ad9a9fe52a2451932cc *inst/doc/introduction.html
 49fead7393585135427fb047159de7b1 *inst/extdata/ICD9_E_Charlson.sas
 daf601a25470899bb97772f01b2ee5e7 *inst/extdata/ICD9_E_Elixhauser.sas
 2df94294a569fceb4f04537296e131e9 *inst/extdata/all-covariates.xls
@@ -127,7 +127,7 @@ ebcc6b47d2dcc09a84592cca2892e30d *src/Makevars.in
 5435397d23426a1f11f0306d7e11a1c3 *src/Makevars.win
 5435397d23426a1f11f0306d7e11a1c3 *src/Makevars.win64
 7c6f33cf09d405b761cc7034d12d406f *src/RcppExports.cpp
-8e89a920b65931ae24f655122c2e28ed *src/comorbid.cpp
+ad0eef59b88d1ef4856793a8105fc10d *src/comorbid.cpp
 98c36247139b93bfadeaa97da317d52c *src/comorbidCommon.cpp
 9f878ad8d7fc5c0dfc6d11ef4fff160e *src/comorbidSetup.cpp
 9464460128ec3c9f0b31762587db02b8 *src/config.h.in
@@ -138,13 +138,13 @@ a12db4d966e4a16f65e0e0ce39ff808e *src/convert.h
 2c8586b7449ce90a3e6563fa04e9d0e9 *src/cutil.h
 c49218518cd0d88e363d09f3e4693d48 *src/is.cpp
 1b419fc0d3d62c57b9db63bccd2b6cf7 *src/is.h
-617ac1c0bc794637bf2ff00afc2b4cb2 *src/local.h
+1d53e84f2ef0dcccabb7aff4c2da61a2 *src/local.h
 b9f94c0a574c27a8a9d4d3c2bd30d3db *src/longToWide.cpp
 8957990549d166f2a9a790acebea69a9 *src/manip.cpp
 09f89b1482ccb1605b5aa1e4a06a56c2 *src/manip.h
 c6d0065b4d130dbdb93f5f2304868295 *src/ranges.cpp
 ef93529233b4752f3abce6ecf5a8d73b *src/ranges.h
-0b5c3377e82d1f3cdb5df5025ea2acf9 *src/util.cpp
+e99878fb94eb45fcea9694fc02e322a6 *src/util.cpp
 ff74f24c24794556ec13693907bdd51b *src/util.h
 695ceb91ade27c5040ca29a072e41408 *tests/test-all.R
 e7cd3c8f69cd266895de9f6f03f1393c *tests/testthat/helper-base.R
@@ -169,7 +169,9 @@ d19749faf85dc309fc29f7bc0bdf924d *tests/testthat/test-valid.R
 e598bfd88c07d73867c0ff267c6c4ef4 *tools/clang-static-code-analyze.sh
 c6bf650b842049c082c2449ab3644dc3 *tools/docker-ubsan-clang.sh
 a9b2a586cbf9a1a9d6bfaa5c6cc87f83 *tools/gdb_fun.sh
-64820bdc92b2e715988fd7a986d9c9d2 *tools/r-devel-ubsan-clang/Dockerfile
+1eeb2ef1ffd12f59636fd2ac8acade5c *tools/r-base-ubsan-gcc/Dockerfile
+01bc982beaa40ab67aabd384f075e161 *tools/r-base-ubsan-gcc/build_and_test_icd9.sh
+6de5f4f791e222faa5c612a4e102be31 *tools/r-devel-ubsan-clang/Dockerfile
 c35635452f2961098a5e69f26f557224 *tools/r-devel-ubsan-clang/icd9-rocker-ubsan-clang.sh
 00c153236b3b63e95cda35267a4c80a5 *tools/reversedep.R
 d8fe8ff0e3406f317d0d81394c45c230 *tools/rocker-devel.sh
