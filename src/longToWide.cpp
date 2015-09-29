@@ -16,31 +16,29 @@
 // along with icd9. If not, see <http://www.gnu.org/licenses/>.
 
 // [[Rcpp::interfaces(r, cpp)]]
-#include <local.h>
-#include <stdio.h>
+#include "local.h"
+#include <Rcpp.h>
 #ifdef ICD9_VALGRIND
 #include <valgrind/callgrind.h>
 #endif
 
-using namespace Rcpp;
-
-CharacterVector raggedToWide(const VecVecStr& ragged, int max_per_pt,
+Rcpp::CharacterVector raggedToWide(const VecVecStr& ragged, int max_per_pt,
 		const VecStr &visitIds) {
 #ifdef ICD9_DEBUG_TRACE
 	Rcpp::Rcout << "visitIds = ";
 	// printIt(visitIds); // broken, not sure why.
 #endif
 	VecStr::size_type distinct_visits = ragged.size();
-	CharacterVector out(distinct_visits * max_per_pt, NA_STRING); // optionally default empty strings? NA? User can do this for now.
+	Rcpp::CharacterVector out(distinct_visits * max_per_pt, NA_STRING); // optionally default empty strings? NA? User can do this for now.
 #ifdef ICD9_DEBUG
-			if (distinct_visits==0) {
+			if (distinct_visits == 0) {
 				Rcpp::Rcout << "no visits. returning blank data\n";
 				return CharacterVector::create();
 			}
 			if (distinct_visits != visitIds.size()) {
 				Rcpp::Rcout << "visit and ragged sizes differ. visits = " << visitIds.size() <<
 				  ", ragged size = " << distinct_visits << ": returning blank data\n";
-				return CharacterVector::create();
+				return Rcpp::CharacterVector::create();
 			}
 #endif
 	for (VecVecStr::size_type row_it = 0; row_it < distinct_visits; ++row_it) {
@@ -56,12 +54,12 @@ CharacterVector raggedToWide(const VecVecStr& ragged, int max_per_pt,
 	Rcpp::Rcout << "writing dimensions\n";
 #endif
 			// set dimensions in reverse (row major for parallel step)
-	out.attr("dim") = Dimension(distinct_visits, max_per_pt);
+	out.attr("dim") = Rcpp::Dimension(distinct_visits, max_per_pt);
 #ifdef ICD9_DEBUG
 			Rcpp::Rcout << "writing labels\n";
 #endif
-	CharacterVector nonames;
-	rownames(out) = wrap(visitIds);
+			Rcpp::CharacterVector nonames;
+	rownames(out) = Rcpp::wrap(visitIds);
 	return out;
 }
 
@@ -101,8 +99,8 @@ int longToRagged(const SEXP& icd9df, VecVecStr& ragged, VecStr& visitIds,
 			visitIds.push_back(vi);
 		} else {
 #ifdef ICD9_DEBUG
-			if (ragged.size()==0) {
-				Rcout << "ragged size is ZERO! aborting\n";
+			if (ragged.size() == 0) {
+			  Rcpp::Rcout << "ragged size is ZERO! bailing ou!\n";
 				break;
 			}
 #endif
@@ -112,7 +110,7 @@ int longToRagged(const SEXP& icd9df, VecVecStr& ragged, VecStr& visitIds,
 				max_per_pt = len;
 		}
 #ifdef ICD9_DEBUG_TRACE
-		Rcout << "ragged size is " << ragged.size() << "\n";
+		Rcpp::Rcout << "ragged size is " << ragged.size() << "\n";
 #endif
 
 		lastVisitId = vi;
@@ -127,7 +125,7 @@ int longToRagged(const SEXP& icd9df, VecVecStr& ragged, VecStr& visitIds,
 }
 
 // [[Rcpp::export]]
-CharacterVector icd9LongToWideCpp(const SEXP& icd9df,
+Rcpp::CharacterVector icd9LongToWideCpp(const SEXP& icd9df,
 		const std::string visitId, const std::string icd9Field,
 		bool aggregate = true) {
 
@@ -139,23 +137,23 @@ CharacterVector icd9LongToWideCpp(const SEXP& icd9df,
 	int max_per_pt = 0;
 
 	const SEXP vsexp = PROTECT(getRListOrDfElement(icd9df, visitId.c_str()));
-	UNPROTECT(1);
 	if (TYPEOF(vsexp) != STRSXP)
 	  Rcpp::stop(
-				"visitIds should be pre-converted to str - which is necessary for matrix rowname output anyway");
+					"visitIds should be pre-converted to str - which is necessary for matrix rowname output anyway");
+	UNPROTECT(1);
 
 	VecStr visitIds; // may be vector of integers or strings
 #ifdef ICD9_DEBUG
-	Rcout << "doing long to ragged\n";
+	Rcpp::Rcout << "doing long to ragged\n";
 #endif
 	max_per_pt = longToRagged(icd9df, ragged, visitIds, visitId, icd9Field,
 			aggregate);
 #ifdef ICD9_DEBUG_TRACE
-	Rcout << "ragged size returned is " << ragged.size() << "\n";
+	Rcpp::Rcout << "ragged size returned is " << ragged.size() << "\n";
 #endif
 
 #ifdef ICD9_DEBUG
-	Rcout << "returning ragged to wide\n";
+	Rcpp::Rcout << "returning ragged to wide\n";
 #endif
 	return raggedToWide(ragged, max_per_pt, visitIds);
 }

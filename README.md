@@ -1,12 +1,29 @@
-<!-- README.md is generated from README.Rmd. Please edit that file and render with rmarkdown::render("README.Rmd")-->
+<!--
+Copyright (C) 2014 - 2015  Jack O. Wasey
 
+This file is part of icd9.
+
+icd9 is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+icd9 is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with icd9. If not, see <http:#www.gnu.org/licenses/>.
+-->
+<!-- README.md is generated from README.Rmd. Please edit that file and render with rmarkdown::render("README.Rmd")-->
 icd9
 ====
 
 [![Build Status](https://travis-ci.org/jackwasey/icd9.svg?branch=master)](https://travis-ci.org/jackwasey/icd9) [![Coverage Status](https://coveralls.io/repos/jackwasey/icd9/badge.svg?branch=master)](https://coveralls.io/r/jackwasey/icd9?branch=master) [![CRAN version](http://www.r-pkg.org/badges/version/icd9)](https://cran.r-project.org/package=icd9) [![CRAN RStudio mirror downloads](http://cranlogs.r-pkg.org/badges/icd9)](https://cran.r-project.org/package=icd9) (RStudio mirror only)
 
-ICD-9 comorbidities, manipulation and validation
-================================================
+ICD comorbidities, manipulation and validation
+==============================================
 
 Main Features
 -------------
@@ -23,7 +40,7 @@ Main Features
 New since last CRAN release:
 ----------------------------
 
--   further performance increases: 1 million ICD-9 codes assigned to comorbidities in a couple of seconds
+-   further performance increases: 1 million ICD-9 codes assigned to comorbidities in less than a second
 -   logical matrix or data.frame for comorbidity output and manipulation
 -   see NEWS.md and github [changelog](https://github.com/jackwasey/icd9/commits/master) for more details
 -   minor update to fix an obscure memory leak found with address sanitizer.
@@ -48,7 +65,7 @@ Examples
 
 See the vignette and code help for many more. Here's a taste:
 
-``` {.r}
+``` r
 patientData
 #>   visitId  icd9  poa
 #> 1    1000 40201    Y
@@ -59,8 +76,8 @@ patientData
 #> 6    1001  4011    Y
 #> 7    1002  4011    E
 
-# reformat input data as needed:
-patientData %>% icd9LongToWide # everything works well with magrittr
+# reformat input data as needed
+patientData %>% icd9LongToWide # everything works well with magrittr %>%
 #>      [,1]    [,2]   [,3]   [,4]   
 #> 1000 "40201" "2258" "7208" "25001"
 #> 1001 "34400" "4011" NA     NA     
@@ -84,6 +101,8 @@ icd9FilterPoa(patientData)
 #> 4    1000 25001
 #> 6    1001  4011
 ```
+
+Note that reformatting from wide to long and back is not as straightforward as using the various Hadley Wickham tools for doing this: knowing the more detailed structure of the data let's us do this better for the case of dealing with ICD codes.
 
 Install
 -------

@@ -1,5 +1,7 @@
-#include <string.h>
+#include "cutil.h"
+#include <R.h>
 #include <Rinternals.h>
+#include <string.h>
 
 SEXP getRListOrDfElement(SEXP list_or_df, const char* element_name) {
 	SEXP names = Rf_getAttrib(list_or_df, R_NamesSymbol);
@@ -14,3 +16,11 @@ SEXP getRListOrDfElement(SEXP list_or_df, const char* element_name) {
 	return element;
 }
 
+void delanychar(char* str, char c) {
+	char *pread = str, *pwrite = str;
+	while (*pread) {
+		*pwrite = *pread++;
+		pwrite += (*pwrite != c);
+	}
+	*pwrite = '\0';
+}

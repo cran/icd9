@@ -18,36 +18,59 @@
 #ifndef LOCAL_H_
 #define LOCAL_H_
 
-// [[Rcpp::interfaces(r, cpp)]]
+#include "config.h"
+
 #include <Rcpp.h>
-//#include <R.h>
-//#include <Rinternals.h>
-//#include <string>
-//#include <algorithm>
 #include <vector>
 #include <set>
-
-#include "config.h"
 
 extern "C" {
 #include "cutil.h"
 #include <cstdlib>
 }
 
-//#define ICD9_DEBUG
-//#define ICD9_DEBUG_TRACE
-//#define ICD9_DEBUG_SETUP
-//#define ICD9_DEBUG_SETUP_TRACE
-//#define ICD9_DEBUG_PARALLEL
-//#define ICD9_VALGRIND
+// these are feature requests: if not available they are disabled.
+#define ICD9_OPENMP
+// #define ICD9_STD_PARALLEL // don't use right now: see comment below
 
-#ifdef _OPENMP
-//#include <omp.h>
-//#define ICD9_OPENMP
+// debugging:
+// #define ICD9_DEBUG
+// #define ICD9_DEBUG_TRACE
+// #define ICD9_DEBUG_SETUP
+// #define ICD9_DEBUG_SETUP_TRACE
+// #define ICD9_DEBUG_PARALLEL
+// #define ICD9_VALGRIND
+
+// enabling this stops the package compiling, but is useful for testing purely
+// in C++. See tools/standalone.sh
+// #define ICD9_STANDALONE
+
+// not enough to test whether header is available, because it may be disabled in
+// R: #ifdef _OPENMP
+#ifdef HAVE_R_OPENMP
+  #include <omp.h>
+  // openmp is required for GLIBC standard library parallel alternatives:
+  // now was parallel mode STL requested?
+  #ifdef ICD9_STD_PARALLEL
+  // WORKING_PARALLEL_ALGORITHM is defined by configure script, but at present
+  // always disabled because it leads to ?false positive 'abort' and 'printf'
+  // found during R CMD check --as-cran
+    #ifndef WORKING_PARALLEL_ALGORITHM
+  // but not available, so disable
+      #undef ICD9_STD_PARALLEL
+    #endif
+  #endif
+#else
+  // OpenMP requested, but not available
+  #undef ICD9_OPENMP
 #endif
 
 #ifdef ICD9_VALGRIND
-#include <valgrind/callgrind.h>
+  #ifdef HAVE_VALGRIND_VALGRIND_H
+    #include <valgrind/callgrind.h>
+  #else
+    #undef ICD9_VALGRIND
+  #endif
 #endif
 
 typedef std::string Str;
@@ -79,8 +102,10 @@ ComorbidOut lookupComorbidByChunkFor(const VecVecInt& vcdb,
 		const VecVecInt& map, const int chunkSize, const int ompChunkSize);
 
 #if (defined ICD9_DEBUG || defined ICD9_DEBUG_SETUP)
-#include <iostream> // only include Rcpp::Rcout if debugging: R won't like cout so we should not do this unless debugging.
-// not so easy to get an iterator for any std container (no common parent class), without Boost
+#include <iostream>
+// only include Rcpp::Rcout if debugging: R won't like cout so we should not do
+// this unless debugging. not so easy to get an iterator for any std container
+// (no common parent class), without Boost
 template<typename VT>
 void printIt(std::vector<VT> v) {
 	typename std::vector<VT>::iterator i;
@@ -113,7 +138,7 @@ void printIt(std::map<MK,MV> v) {
 	Rcpp::Rcout.flush();
 }
 
-void printCharVec(Rcpp::CharacterVector cv);
-#endif
+#endif // end (defined ICD9_DEBUG || defined ICD9_DEBUG_SETUP)
 
 #endif // LOCAL_H_
+

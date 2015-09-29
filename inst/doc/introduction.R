@@ -167,6 +167,15 @@ icd9Hierarchy[
 ## ----cardiacChainExplainExample------------------------------------------
 cardiac %>% icd9Explain(warn = FALSE) %>% head(10)
 
+## ----speed, cache = TRUE-------------------------------------------------
+# codes selected from AHRQ mapping
+many_patients <- icd9:::randomPatients(100000) 
+
+# result in seconds (platform and load dependent, of course)
+system.time(
+  icd9ComorbidAhrq(many_patients)
+  )[["elapsed"]] 
+
 ## ----"arbitraryMapping"--------------------------------------------------
 names(icd9Chapters)[c(1:5, 14)]
 myMap <- icd9:::icd9ChaptersToMap(icd9Chapters[c(2, 5, 14)])

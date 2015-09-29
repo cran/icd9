@@ -10,7 +10,7 @@
 
 <meta name="author" content="Jack O. Wasey" />
 
-<meta name="date" content="2015-09-08" />
+<meta name="date" content="2015-09-28" />
 
 <title>Introducing icd9: working with ICD-9 codes and comorbidities in R</title>
 
@@ -64,7 +64,7 @@ img {
 <div id="header">
 <h1 class="title">Introducing icd9: working with ICD-9 codes and comorbidities in R</h1>
 <h4 class="author"><em>Jack O. Wasey</em></h4>
-<h4 class="date"><em>2015-09-08</em></h4>
+<h4 class="date"><em>2015-09-28</em></h4>
 </div>
 
 <div id="TOC">
@@ -93,6 +93,26 @@ img {
 <li><a href="#conclusion">Conclusion</a></li>
 </ul>
 </div>
+
+<!--
+Copyright (C) 2014 - 2015  Jack O. Wasey
+
+This file is part of icd9.
+
+icd9 is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+icd9 is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with icd9. If not, see <http:#www.gnu.org/licenses/>.
+-->
+
 
 <div id="introduction" class="section level2">
 <h2>Introduction</h2>
@@ -142,7 +162,7 @@ icd9ShortToDecimal(c(&quot;1&quot;, &quot;22&quot;, &quot;2244&quot;, &quot;1005
 # similar operations with magrittr, also showing invalid codes
 codes &lt;- c(&quot;87.65&quot;, &quot;9999&quot;, &quot;Aesop&quot;, -100, &quot;&quot;, NA)
 icd9DecimalToShort(codes)
-#&gt; [1] &quot;08765&quot; NA      NA      NA      NA      NA</code></pre>
+#&gt; [1] &quot;08765&quot; &quot;&quot;      &quot;&quot;      &quot;&quot;      &quot;&quot;      NA</code></pre>
 </div>
 <div id="validation-of-icd-9-codes" class="section level2">
 <h2>Validation of ICD-9 codes</h2>
@@ -444,14 +464,16 @@ str(difference)
 <pre class="r"><code># codes selected from AHRQ mapping
 many_patients &lt;- icd9:::randomPatients(100000) 
 
+# result in seconds (platform and load dependent, of course)
 system.time(
   icd9ComorbidAhrq(many_patients)
-  )[[&quot;elapsed&quot;]] # result in seconds
-#&gt; [1] 1.04</code></pre>
+  )[[&quot;elapsed&quot;]] 
+#&gt; [1] 0.226</code></pre>
+<p>Don’t want to stress CRAN, so no larger numbers demonstrated, but I do consistently get about 5 seconds for 10 million rows of comorbidities on a moderately powerful workstation.</p>
 </div>
 <div id="arbitrary-icd-9-mapping" class="section level3">
 <h3>Arbitrary ICD-9 mapping</h3>
-<p>The user can provide any ICD-9 mapping they wish. Submissions of other peer-reviewed published mappings could be included in this package, if their license permits. Create an issue in <a href="https://github.com/jackwasey/icd9/issues">github</a> or email me at <a href="mailto:jack@jackwasey.com">jack@jackwasey.com</a>) Included in this package is a small data set called <code>icd9Chapters</code>, which lists the ICD-9-CM (and indeed ICD-9) Chapters. These can easily be expanded out and used as a mapping, so instead of a comorbidity, we see which patients have codes in each chapter of the ICD-9 defintion.</p>
+<p>The user can provide any ICD-9, ICD-10 or other code mapping to comorbidities they wish. Submissions of other peer-reviewed published mappings could be included in this package, if their license permits. Create an issue in <a href="https://github.com/jackwasey/icd9/issues">github</a> or email me at <a href="mailto:jack@jackwasey.com">jack@jackwasey.com</a>) Included in this package is a small data set called <code>icd9Chapters</code>, which lists the ICD-9-CM (and indeed ICD-9) Chapters. These can easily be expanded out and used as a mapping, so instead of a comorbidity, we see which patients have codes in each chapter of the ICD-9 defintion.</p>
 <pre class="r"><code>names(icd9Chapters)[c(1:5, 14)]
 #&gt; [1] &quot;Infectious And Parasitic Diseases&quot;                                    
 #&gt; [2] &quot;Neoplasms&quot;                                                            
