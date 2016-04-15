@@ -21,7 +21,7 @@ test_that("explain a large set of ICD-9 codes succinctly", {
   expect_identical(
     icd9ExplainShort(icd9ChildrenShort("391", onlyReal = FALSE),
                      doCondense = FALSE),
-    c("Rheumatic fever with heart involvement","Acute rheumatic pericarditis",
+    c("Rheumatic fever with heart involvement", "Acute rheumatic pericarditis",
       "Acute rheumatic endocarditis", "Acute rheumatic myocarditis",
       "Other acute rheumatic heart disease",
       "Acute rheumatic heart disease, unspecified")
@@ -51,8 +51,8 @@ test_that("explain S3 dispatch", {
   expect_equal(icd9ExplainDecimal("003.21"),
                icd9Explain("003.21", isShort = FALSE))
   expect_equal(icd9Explain.list(list(a = "003.21"), isShort = FALSE),
-               list(a=icd9Explain("00321", isShort = TRUE)))
-  expect_equal(icd9Explain.list(list(a = "003.21", b= "390"), isShort = FALSE),
+               list(a = icd9Explain("00321", isShort = TRUE)))
+  expect_equal(icd9Explain.list(list(a = "003.21", b = "390"), isShort = FALSE),
                list(a = icd9Explain("00321", isShort = TRUE),
                     b = "Rheumatic fever without mention of heart involvement"))
   expect_warning(res <- icd9Explain(list(a = "not", b = "icd9code"), isShort = TRUE))
@@ -77,7 +77,7 @@ test_that("expalin a single top level code without a top level explanation", {
 })
 
 
-test_that("explain a single leaf node" , {
+test_that("explain a single leaf node", {
   expect_equal(icd9ExplainShort("27800", doCondense = FALSE), "Obesity, unspecified")
   expect_equal(icd9ExplainShort("27800", doCondense = TRUE), "Obesity, unspecified")
   expect_equal(icd9Explain("00329"), "Other localized salmonella infections")
@@ -102,7 +102,7 @@ test_that("guess icd9 types: short", {
 })
 
 test_that("guess icd9 types: ambiguous, default to short", {
-  expect_equal(icd9GuessIsShort(c("123.4","2345")), TRUE)
+  expect_equal(icd9GuessIsShort(c("123.4", "2345")), TRUE)
   expect_equal(icd9GuessIsShort(c("123.4", NA, "2345")), TRUE)
 })
 
@@ -232,7 +232,7 @@ test_that("unsorted hierarchy tests", {
 
 test_that("explain gives appropriate warnings by default", {
   # if we ask for real codes, we should expect all real codes as input:
-  expect_that(icd9CondenseShort("E7777", onlyReal = TRUE, warn = TRUE), gives_warning())
+  expect_warning(icd9CondenseShort("E7777", onlyReal = TRUE, warn = TRUE))
 })
 
 test_that("explain icd9GetChapters bad input", {
@@ -277,10 +277,8 @@ test_that("explain icd9GetChapters simple input", {
 })
 
 test_that("working with named lists of codes, decimal is guessed", {
-  expect_that(icd9ExplainDecimal(list(a = c("001"), b = c("001.1", "001.9"))),
-              testthat::not(gives_warning()))
-  expect_that(icd9Explain(list(a = c("001"), b = c("001.1", "001.9"))),
-              testthat::not(gives_warning()))
+  expect_warning(icd9ExplainDecimal(list(a = c("001"), b = c("001.1", "001.9"))), NA)
+  expect_warning(icd9Explain(list(a = c("001"), b = c("001.1", "001.9"))), NA)
 })
 
 test_that("icd9 descriptions is parsed correctly", {

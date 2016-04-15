@@ -111,7 +111,7 @@ parseAhrqSas <- function(sasPath = system.file("extdata", "comformat2012-2013.tx
   }
 
   names(ahrqComorbid) <- icd9::ahrqComorbidNamesHtnAbbrev
-  if (save) saveInDataDir("ahrqComorbid") # EXCLUDE COVERAGE
+  if (save) saveInDataDir("ahrqComorbid") # nocov
   invisible(ahrqComorbid)
 }
 
@@ -159,9 +159,6 @@ parseQuanDeyoSas <- function(sasPath = NULL,
   invisible(quanDeyoComorbid)
 }
 
-#' @title Generate Quan's revised Elixhauser comorbidities
-#' @template parse-template
-#' @keywords internal
 parseQuanElix <- function(condense = FALSE,
                           save = FALSE,
                           path = "data") {

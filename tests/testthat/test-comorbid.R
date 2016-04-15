@@ -20,7 +20,7 @@ context("comorbidities")
 library(magrittr, quietly = TRUE, warn.conflicts = FALSE)
 
 test_that("try to induce c++ segfault bug", {
-  expect_that(icd9Comorbid(ahrqTestDat, ahrqComorbid, isShort = TRUE), testthat::not(throws_error()))
+  expect_error(icd9Comorbid(ahrqTestDat, ahrqComorbid, isShort = TRUE), NA)
 })
 
 test_that("ahrq make sure all the children are listed in the saved data.", {
@@ -123,40 +123,23 @@ test_that("can condense the big lists of comorbidities without errors", {
 
   for (onlyReal in c(TRUE, FALSE)) {
     if (onlyReal) {
-      expect_that(ahrq <- lapply(ahrqComorbid, icd9CondenseShort, onlyReal = onlyReal),
-                  gives_warning())
-      expect_that(quanDeyo <- lapply(quanDeyoComorbid, icd9Condense, onlyReal),
-                  gives_warning())
-      expect_that(quanElix <- lapply(quanElixComorbid,
-                                     icd9Condense, onlyReal),
-                  gives_warning())
-      expect_that(elix <- lapply(elixComorbid, icd9Condense, onlyReal),
-                  gives_warning())
+      expect_warning(ahrq <- lapply(ahrqComorbid, icd9CondenseShort, onlyReal = onlyReal))
+      expect_warning(quanDeyo <- lapply(quanDeyoComorbid, icd9Condense, onlyReal))
+      expect_warning(quanElix <- lapply(quanElixComorbid,
+                                     icd9Condense, onlyReal))
+      expect_warning(elix <- lapply(elixComorbid, icd9Condense, onlyReal))
     }
     else {
-      expect_that(ahrq <- lapply(ahrqComorbid, icd9CondenseShort, onlyReal),
-                  testthat::not(gives_warning()))
-      expect_that(quanDeyo <- lapply(quanDeyoComorbid, icd9CondenseShort, onlyReal),
-                  testthat::not(gives_warning()))
-      expect_that(quanElix <- lapply(quanElixComorbid, icd9CondenseShort, onlyReal),
-                  testthat::not(gives_warning()))
-      expect_that(elix <- lapply(elixComorbid, icd9CondenseShort, onlyReal),
-                  testthat::not(gives_warning()))
+      expect_warning(ahrq <- lapply(ahrqComorbid, icd9CondenseShort, onlyReal), NA)
+      expect_warning(quanDeyo <- lapply(quanDeyoComorbid, icd9CondenseShort, onlyReal), NA)
+      expect_warning(quanElix <- lapply(quanElixComorbid, icd9CondenseShort, onlyReal), NA)
+      expect_warning(elix <- lapply(elixComorbid, icd9CondenseShort, onlyReal), NA)
     }
 
     expect_is(ahrq, class = "list")
     expect_is(elix, class = "list")
     expect_is(quanDeyo, class = "list")
     expect_is(quanElix, class = "list")
-    # the comorbidity mappings save in \code{data} should not be condensed.
-    expect_that(ahrq,
-                testthat::not(testthat::equals(ahrqComorbid)))
-    expect_that(elix,
-                testthat::not(testthat::equals(elixComorbid)))
-    expect_that(quanDeyo,
-                testthat::not(testthat::equals(quanDeyoComorbid)))
-    expect_that(quanElix,
-                testthat::not(testthat::equals(quanElixComorbid)))
   }
 })
 
@@ -185,7 +168,8 @@ test_that("icd9Chapters, etc. as saved in data can be recreated", {
 test_that("AHRQ interpretation at least returns something reasonable", {
   skip_slow_tests()
   result <- parseAhrqSas(sasPath = system.file("extdata",
-                                               "comformat2012-2013.txt", package="icd9"), save = FALSE)
+                                               "comformat2012-2013.txt",
+                                               package = "icd9"), save = FALSE)
   expect_that(result, is_a("list"))
   expect_true(length(result) > 10)
 })
@@ -567,7 +551,7 @@ test_that("diff comorbid works", {
   expect_error(icd9DiffComorbid(bad_input, bad_input))
 
   # no warning or error for good data
-  expect_that(res <- icd9DiffComorbid(ahrqComorbid, elixComorbid, show = FALSE), testthat::not(gives_warning()))
+  expect_warning(res <- icd9DiffComorbid(ahrqComorbid, elixComorbid, show = FALSE), NA)
   expect_true(all(names(res) %in% c(
     "CHF", "Valvular", "PHTN", "PVD", "HTN", "HTNcx", "Paralysis",
     "NeuroOther", "Pulmonary", "DM", "DMcx", "Hypothyroid", "Renal",
@@ -583,14 +567,12 @@ test_that("diff comorbid works", {
   # both, also with elements in either side set diff
   expect_equal(res$PUD$both, c("53170", "53270", "53370", "53470"))
 
-  expect_that(resq <- icd9DiffComorbid(quanElixComorbid, quanDeyoComorbid, show = TRUE),
-              testthat::not(gives_warning()))
+  expect_warning(resq <- icd9DiffComorbid(quanElixComorbid, quanDeyoComorbid, show = TRUE), NA)
 
-  expect_that(
+  expect_error(
     utils::capture.output(
       resq <- icd9DiffComorbid(quanElixComorbid, quanDeyoComorbid, show = TRUE)
-      ),
-    testthat::not(throws_error())
+      ), NA
   )
 
 })

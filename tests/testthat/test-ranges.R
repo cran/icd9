@@ -125,7 +125,7 @@ test_that("expand icd9 range definition", {
   expect_error(icd9ExpandRangeShort(c("10", "20"), c("11", "21")))
 
   # found bugs when expanding Injury and Poisoning chapter.
-  expect_that(icd9ExpandRangeShort("997", "998"), testthat::not(throws_error()))
+  expect_error(icd9ExpandRangeShort("997", "998"), NA)
   expect_false("999" %in% icd9ExpandRangeShort("998", "998", onlyReal = FALSE))
   expect_false("009" %in% icd9ExpandRangeShort("8", "8", onlyReal = FALSE))
 
@@ -460,15 +460,15 @@ test_that("sysdata.rda is okay", {
                "icd9NShortReal", "icd9VShortReal", "icd9EShortReal",
                "data_sources")
 
-  expect_that(sysdat <- generateSysData(save = FALSE), testthat::not(throws_error()))
+  expect_error(sysdat <- generateSysData(save = FALSE), NA)
   expect_equal(names(sysdat), lknames)
 
-  expect_less_than(length(icd9NShortBillable), length(icd9NShortReal))
-  expect_less_than(length(icd9VShortBillable), length(icd9VShortReal))
-  expect_less_than(length(icd9EShortBillable), length(icd9EShortReal))
-  expect_less_than(length(icd9NShortReal), length(icd9NShort))
-  expect_less_than(length(icd9VShortReal), length(icd9VShort))
-  expect_less_than(length(icd9EShortReal), length(icd9EShort))
+  expect_lt(length(icd9NShortBillable), length(icd9NShortReal))
+  expect_lt(length(icd9VShortBillable), length(icd9VShortReal))
+  expect_lt(length(icd9EShortBillable), length(icd9EShortReal))
+  expect_lt(length(icd9NShortReal), length(icd9NShort))
+  expect_lt(length(icd9VShortReal), length(icd9VShort))
+  expect_lt(length(icd9EShortReal), length(icd9EShort))
   expect_true(all(icd9NShortReal %in% icd9NShort))
   expect_true(all(icd9VShortReal %in% icd9VShort))
   expect_true(all(icd9EShortReal %in% icd9EShort))

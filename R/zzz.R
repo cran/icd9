@@ -15,20 +15,21 @@
 # You should have received a copy of the GNU General Public License
 # along with icd9. If not, see <http:#www.gnu.org/licenses/>.
 
-# EXCLUDE COVERAGE START
+# nocov start
 
 .onAttach <- function(libname, pkgname) {
-  packageStartupMessage(
-    "Welcome to the icd9 package for finding comorbidities and interpretation of ICD-9 codes.
-Suggestions and contributions are welcome at https://github.com/jackwasey/icd9 .
+  packageStartupMessage("The icd9 package is now deprecated. ",
+"The new 'icd' package is on CRAN and has ICD-10 support and bug-fixes. ",
+"All the functions available in 'icd9' have been preserved in 'icd', ",
+"but a simpler set of function names is also available.", "
 
-Please cite this package if you find it useful for your published work.
-citation(package = \"icd9\")
+To install it, use:
+install.packages(\"icd\")
+# or for the development version:
+devtools::install_github(\"jackwasey/icd\")
 
-Development version can be installed with
-# install.packages(\"devtools\")
-library(devtools)
-install_github(\"jackwasey/icd9\")
+Then:
+remove.packages(\"icd9\")
 ")
 }
 
@@ -52,6 +53,7 @@ release_questions <- function() {
     "Does every file have correct licence information?",
     "Are github pages site refreshed from latest documentation?",
     # code quality:
+    "Is code compiled with -Wall -Wextra -pedantic?",
     "Have you linted, including removing commented code?",
     "Are you happy with the code coverage?",
     "Is every SEXP PROTECT()ed and UNPROTECT()ed?",
@@ -76,4 +78,4 @@ release_questions <- function() {
   )
 }
 
-# EXCLUDE COVERAGE END
+# nocov end

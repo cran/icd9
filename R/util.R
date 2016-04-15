@@ -29,8 +29,6 @@ trim <- function (x) {
   x
 }
 
-# EXCLUDE COVERAGE START
-
 allIsNumeric <- function(x, extras = c(".", "NA", NA)) {
   old <- options(warn = - 1)
   on.exit(options(old))
@@ -121,7 +119,7 @@ strMultiMatch <- function(pattern, text, dropEmpty = FALSE, ...) {
         x = x,
         m = regexec(
           pattern = pattern,
-          text=x, ...),
+          text = x, ...),
         ...)
     )[ -1]
   )
@@ -162,6 +160,8 @@ strPairMatch <- function(pattern, text, swap = FALSE, dropEmpty = FALSE, pos = c
   out
 }
 
+# nocov start
+
 #' unzip a single file
 #' @keywords internal
 #' @importFrom utils download.file unzip
@@ -184,7 +184,7 @@ zip_single <- function(url, filename, save_path) {
 
   file.copy(file.path(zipdir, filename), save_path, overwrite = TRUE)
 }
-# EXCLUDE COVERAGE END
+# nocov end
 
 getVisitId <- function(x, visitId = NULL) {
   guesses <- c("visit.?Id", "patcom", "encounter.?id", "enc.?id",
@@ -235,10 +235,6 @@ getIcdField <- function(x, icd9Field = NULL) {
 
 getLatestBillableVersion <- function() "32"
 
-#' @title trim null or empty values from a list
-#' @param x list
-#' @return trimmed list
-#' @keywords internal
 listTrimFlat  <-  function(x) {
   suppressWarnings(
     x[sapply(x, length) != 0 &
@@ -249,10 +245,6 @@ listTrimFlat  <-  function(x) {
   )
 }
 
-#' @title swap names and values of a vector
-#' @param x named vector
-#' @return vector
-#' @keywords internal
 swapNamesWithVals <- function(x) {
   assertVector(x, strict = TRUE, any.missing = FALSE, names = "named")
   new_names <- unname(x)
@@ -286,6 +278,9 @@ skip_on_travis <- function() {
   if (!identical(Sys.getenv("TRAVIS"), "true")) return()
   testthat::skip("On Travis")
 }
+
+
+# nocov start
 
 #' Fast Factor Generation
 #'
@@ -335,6 +330,8 @@ factor_ <- function(x, levels = NULL, labels = levels, na.last = NA) {
   class(f) <- "factor"
   f
 }
+
+# nocov end
 
 #' @rdname factor_
 #' @details I don't think there is any requirement for factor levels to be

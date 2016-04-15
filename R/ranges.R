@@ -224,7 +224,7 @@ icd9ExpandRangeMajor <- function(start, end, onlyReal = TRUE) {
   # cannot range between numeric, V and E codes, so ensure same type.
   stopifnot(toupper(c[1]) == toupper(d[1]))
   if (icd9IsV(start)) fmt <- "%02d" else fmt <- "%03d"
-  majors <- paste(c[,1], sprintf(fmt = fmt, c[,2]:d[,2]), sep  = "")
+  majors <- paste(c[, 1], sprintf(fmt = fmt, c[, 2]:d[, 2]), sep  = "")
   if (onlyReal) return(icd9GetRealShort(majors, onlyBillable = FALSE))
   majors
 }
@@ -276,6 +276,7 @@ icd9ExpandRangeDecimal <- function(start, end, onlyReal = TRUE,
 # icd9Children separate from C++ docs so that I can guess isShort
 #' @name icd9Children
 #' @title Expand ICD-9 codes to all possible sub-codes
+#' @description Expand ICD-9 codes to all possible sub-codes
 #' @template icd9-any
 #' @template icd9-short
 #' @template icd9-decimal
